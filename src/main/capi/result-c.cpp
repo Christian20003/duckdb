@@ -2,6 +2,8 @@
 #include "duckdb/common/types/timestamp.hpp"
 #include "duckdb/common/allocator.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct CBaseConverter {
@@ -201,6 +203,9 @@ duckdb_state deprecated_duckdb_translate_column(MaterializedQueryResult &result,
 		break;
 	case LogicalTypeId::UBIGINT:
 		WriteData<uint64_t>(column, collection, column_ids);
+		break;
+	case LogicalTypeId::HALF_FLOAT:
+		WriteData<std::bfloat16_t>(column, collection, column_ids);
 		break;
 	case LogicalTypeId::FLOAT:
 		WriteData<float>(column, collection, column_ids);

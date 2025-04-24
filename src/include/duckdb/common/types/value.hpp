@@ -19,6 +19,8 @@
 #include "duckdb/common/types/interval.hpp"
 #include "duckdb/common/shared_ptr.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 class CastFunctionSet;
@@ -156,6 +158,8 @@ public:
 	DUCKDB_API static Value DECIMAL(int32_t value, uint8_t width, uint8_t scale);
 	DUCKDB_API static Value DECIMAL(int64_t value, uint8_t width, uint8_t scale);
 	DUCKDB_API static Value DECIMAL(hugeint_t value, uint8_t width, uint8_t scale);
+	//! Create a bfloat Value from a specified value
+	DUCKDB_API static Value HALF_FLOAT(std::bfloat16_t value);
 	//! Create a float Value from a specified value
 	DUCKDB_API static Value FLOAT(float value);
 	//! Create a double Value from a specified value
@@ -268,6 +272,7 @@ public:
 	DUCKDB_API bool operator<=(const int64_t &rhs) const;
 	DUCKDB_API bool operator>=(const int64_t &rhs) const;
 
+	DUCKDB_API static bool HalfFloatIsFinite(std::bfloat16_t value);
 	DUCKDB_API static bool FloatIsFinite(float value);
 	DUCKDB_API static bool DoubleIsFinite(double value);
 	template <class T>
@@ -323,6 +328,7 @@ private:
 		uint64_t ubigint;
 		hugeint_t hugeint;
 		uhugeint_t uhugeint;
+		std::bfloat16_t half_float;
 		float float_;   // NOLINT
 		double double_; // NOLINT
 		uintptr_t pointer;
@@ -392,6 +398,10 @@ struct UBigIntValue {
 
 struct UhugeIntValue {
 	DUCKDB_API static uhugeint_t Get(const Value &value);
+};
+
+struct HalfFloatValue {
+	DUCKDB_API static std::bfloat16_t Get(const Value &value);
 };
 
 struct FloatValue {
@@ -511,6 +521,8 @@ Value DUCKDB_API Value::CreateValue(string value);
 template <>
 Value DUCKDB_API Value::CreateValue(string_t value);
 template <>
+Value DUCKDB_API Value::CreateValue(std::bfloat16_t value);
+template <>
 Value DUCKDB_API Value::CreateValue(float value);
 template <>
 Value DUCKDB_API Value::CreateValue(double value);
@@ -543,6 +555,8 @@ template <>
 DUCKDB_API uhugeint_t Value::GetValue() const;
 template <>
 DUCKDB_API string Value::GetValue() const;
+template <>
+DUCKDB_API std::bfloat16_t Value::GetValue() const;
 template <>
 DUCKDB_API float Value::GetValue() const;
 template <>
@@ -594,6 +608,8 @@ template <>
 DUCKDB_API string Value::GetValueUnsafe() const;
 template <>
 DUCKDB_API string_t Value::GetValueUnsafe() const;
+template <>
+DUCKDB_API std::bfloat16_t Value::GetValueUnsafe() const;
 template <>
 DUCKDB_API float Value::GetValueUnsafe() const;
 template <>

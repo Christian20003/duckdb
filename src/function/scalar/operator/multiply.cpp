@@ -16,6 +16,12 @@ namespace duckdb {
 // * [multiply]
 //===--------------------------------------------------------------------===//
 template <>
+std::bfloat16_t MultiplyOperator::Operation(std::bfloat16_t left, std::bfloat16_t right) {
+	auto result = left * right;
+	return result;
+}
+
+template <>
 float MultiplyOperator::Operation(float left, float right) {
 	auto result = left * right;
 	return result;

@@ -14,6 +14,8 @@
 #include "duckdb/common/exception.hpp"
 #include "duckdb/common/uhugeint.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //! The uhugeint class contains static operations for the UINT128 type
@@ -183,6 +185,8 @@ template <>
 DUCKDB_API bool Uhugeint::TryCast(uhugeint_t input, hugeint_t &result);
 template <>
 DUCKDB_API bool Uhugeint::TryCast(uhugeint_t input, uhugeint_t &result);
+template <>
+DUCKDB_API bool Uhugeint::TryCast(uhugeint_t input, std::bfloat16_t &result);
 template <>
 DUCKDB_API bool Uhugeint::TryCast(uhugeint_t input, float &result);
 template <>

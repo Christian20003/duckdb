@@ -93,6 +93,7 @@ Value ParquetStatisticsUtils::ConvertValueInternal(const LogicalType &type,
 			throw InvalidInputException("Incorrect stats size for type BIGINT");
 		}
 		return Value::BIGINT(Load<int64_t>(stats_data));
+	case LogicalTypeId::HALF_FLOAT:
 	case LogicalTypeId::FLOAT: {
 		if (stats.size() != sizeof(float)) {
 			throw InvalidInputException("Incorrect stats size for type FLOAT");
@@ -348,6 +349,7 @@ unique_ptr<BaseStatistics> ParquetStatisticsUtils::TransformColumnStatistics(con
 	case LogicalTypeId::SMALLINT:
 	case LogicalTypeId::INTEGER:
 	case LogicalTypeId::BIGINT:
+	case LogicalTypeId::HALF_FLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 	case LogicalTypeId::DATE:
@@ -455,6 +457,8 @@ static uint64_t ValueXXH64(const Value &constant) {
 		return ValueXH64FixedWidth<uint64_t>(constant);
 	case PhysicalType::INT64:
 		return ValueXH64FixedWidth<int64_t>(constant);
+	case PhysicalType::HALF_FLOAT:
+		return ValueXH64FixedWidth<float>(constant);
 	case PhysicalType::FLOAT:
 		return ValueXH64FixedWidth<float>(constant);
 	case PhysicalType::DOUBLE:
@@ -508,6 +512,7 @@ bool ParquetStatisticsUtils::BloomFilterSupported(const LogicalTypeId &type_id) 
 	case LogicalTypeId::UINTEGER:
 	case LogicalTypeId::BIGINT:
 	case LogicalTypeId::UBIGINT:
+	case LogicalTypeId::HALF_FLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 	case LogicalTypeId::VARCHAR:

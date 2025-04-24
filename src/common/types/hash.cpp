@@ -43,6 +43,14 @@ struct FloatingPointEqualityTransform {
 };
 
 template <>
+hash_t Hash(std::bfloat16_t val) {
+	static_assert(sizeof(std::bfloat16_t) == sizeof(uint16_t), "");
+	FloatingPointEqualityTransform<std::bfloat16_t>::OP(val);
+	uint16_t uval = Load<uint16_t>(const_data_ptr_cast(&val));
+	return MurmurHash64(uval);
+}
+
+template <>
 hash_t Hash(float val) {
 	static_assert(sizeof(float) == sizeof(uint32_t), "");
 	FloatingPointEqualityTransform<float>::OP(val);

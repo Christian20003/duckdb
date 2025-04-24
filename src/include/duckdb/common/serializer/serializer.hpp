@@ -24,6 +24,8 @@
 #include "duckdb/main/config.hpp"
 #include "duckdb/common/insertion_order_preserving_map.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 class SerializationOptions {
@@ -359,6 +361,7 @@ protected:
 	virtual void WriteValue(int64_t value) = 0;
 	virtual void WriteValue(hugeint_t value) = 0;
 	virtual void WriteValue(uhugeint_t value) = 0;
+	virtual void WriteValue(std::bfloat16_t value) = 0;
 	virtual void WriteValue(float value) = 0;
 	virtual void WriteValue(double value) = 0;
 	virtual void WriteValue(const string_t value) = 0;

@@ -96,6 +96,7 @@ BoundCastInfo DefaultCasts::GetDefaultCastFunction(BindCastInput &input, const L
 	case LogicalTypeId::UBIGINT:
 	case LogicalTypeId::UHUGEINT:
 	case LogicalTypeId::HUGEINT:
+	case LogicalTypeId::HALF_FLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 		return NumericCastSwitch(input, source, target);

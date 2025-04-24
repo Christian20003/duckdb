@@ -9,6 +9,8 @@
 #include "duckdb/common/arrow/appender/list.hpp"
 #include "duckdb/function/table/arrow/arrow_duck_schema.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //===--------------------------------------------------------------------===//
@@ -205,6 +207,9 @@ static void InitializeFunctionPointers(ArrowAppendData &append_data, const Logic
 		break;
 	case LogicalTypeId::UBIGINT:
 		InitializeAppenderForType<ArrowScalarData<uint64_t>>(append_data);
+		break;
+	case LogicalTypeId::HALF_FLOAT:
+		InitializeAppenderForType<ArrowScalarData<std::bfloat16_t>>(append_data);
 		break;
 	case LogicalTypeId::FLOAT:
 		InitializeAppenderForType<ArrowScalarData<float>>(append_data);

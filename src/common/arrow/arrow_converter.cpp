@@ -155,6 +155,9 @@ void SetArrowFormat(DuckDBArrowSchemaHolder &root_holder, ArrowSchema &child, co
 	case LogicalTypeId::UBIGINT:
 		child.format = "L";
 		break;
+	case LogicalTypeId::HALF_FLOAT:
+		child.format = "hf";
+		break;
 	case LogicalTypeId::FLOAT:
 		child.format = "f";
 		break;

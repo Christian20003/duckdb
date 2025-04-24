@@ -9,6 +9,8 @@
 
 #include "duckdb/common/bswap.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 namespace {
@@ -692,6 +694,9 @@ static void FlattenRunEndsSwitch(Vector &result, ArrowRunEndEncodingState &run_e
 	case PhysicalType::BOOL:
 		FlattenRunEnds<RUN_END_TYPE, bool>(result, run_end_encoding, compressed_size, scan_offset, size);
 		break;
+	case PhysicalType::HALF_FLOAT:
+		FlattenRunEnds<RUN_END_TYPE, std::bfloat16_t>(result, run_end_encoding, compressed_size, scan_offset, size);
+		break;
 	case PhysicalType::FLOAT:
 		FlattenRunEnds<RUN_END_TYPE, float>(result, run_end_encoding, compressed_size, scan_offset, size);
 		break;
@@ -813,6 +818,7 @@ static void ColumnArrowToDuckDB(Vector &vector, ArrowArray &array, ArrowArraySca
 	case LogicalTypeId::TINYINT:
 	case LogicalTypeId::SMALLINT:
 	case LogicalTypeId::INTEGER:
+	case LogicalTypeId::HALF_FLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 	case LogicalTypeId::UTINYINT:

@@ -12,6 +12,8 @@
 #include "duckdb/common/winapi.hpp"
 #include "duckdb/main/table_description.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 class ColumnDataCollection;
@@ -193,6 +195,8 @@ template <>
 DUCKDB_API void BaseAppender::Append(uint32_t value);
 template <>
 DUCKDB_API void BaseAppender::Append(uint64_t value);
+template <>
+DUCKDB_API void BaseAppender::Append(std::bfloat16_t value);
 template <>
 DUCKDB_API void BaseAppender::Append(float value);
 template <>

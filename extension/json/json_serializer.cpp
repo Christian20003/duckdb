@@ -171,6 +171,11 @@ void JsonSerializer::WriteValue(uhugeint_t value) {
 	stack.pop_back();
 }
 
+void JsonSerializer::WriteValue(std::bfloat16_t value) {
+	auto val = yyjson_mut_real(doc, value);
+	PushValue(val);
+}
+
 void JsonSerializer::WriteValue(float value) {
 	auto val = yyjson_mut_real(doc, value);
 	PushValue(val);

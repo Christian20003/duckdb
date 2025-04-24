@@ -2,6 +2,8 @@
 #include "json_common.hpp"
 #include "duckdb/common/serializer/deserializer.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 class JsonDeserializer : public Deserializer {
@@ -74,6 +76,7 @@ private:
 	uint32_t ReadUnsignedInt32() final;
 	int64_t ReadSignedInt64() final;
 	uint64_t ReadUnsignedInt64() final;
+	std::bfloat16_t ReadHalfFloat() final;
 	float ReadFloat() final;
 	double ReadDouble() final;
 	string ReadString() final;

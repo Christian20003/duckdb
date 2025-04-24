@@ -130,6 +130,7 @@ void DuckDBTypesFunction(ClientContext &context, TableFunctionInput &data_p, Dat
 		case LogicalTypeId::INTEGER:
 		case LogicalTypeId::BIGINT:
 		case LogicalTypeId::DECIMAL:
+		case LogicalTypeId::HALF_FLOAT:
 		case LogicalTypeId::FLOAT:
 		case LogicalTypeId::DOUBLE:
 		case LogicalTypeId::UTINYINT:

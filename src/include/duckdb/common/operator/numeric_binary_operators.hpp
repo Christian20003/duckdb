@@ -40,11 +40,6 @@ template <>
 interval_t DivideOperator::Operation(interval_t left, int64_t right);
 
 template <>
-std::bfloat16_t ModuloOperator::Operation(std::bfloat16_t left, std::bfloat16_t right) {
-	D_ASSERT(right != 0);
-	return std::fmod(left, right);
-};
-template <>
 float ModuloOperator::Operation(float left, float right);
 template <>
 double ModuloOperator::Operation(double left, double right);
