@@ -17,6 +17,7 @@
 #include "duckdb/planner/expression/bound_function_expression.hpp"
 
 #include <limits>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -1005,12 +1006,14 @@ static scalar_function_t GetBinaryFunctionIgnoreZero(PhysicalType type) {
 		return BinaryScalarFunctionIgnoreZero<hugeint_t, hugeint_t, hugeint_t, OP, BinaryNumericDivideHugeintWrapper>;
 	case PhysicalType::UINT128:
 		return BinaryScalarFunctionIgnoreZero<uhugeint_t, uhugeint_t, uhugeint_t, OP>;
+	case PhysicalType::HALF_FLOAT:
+		return BinaryScalarFunctionIgnoreZero<std::bfloat16_t, std::bfloat16_t, std::bfloat16_t, OP>;
 	case PhysicalType::FLOAT:
 		return BinaryScalarFunctionIgnoreZero<float, float, float, OP>;
 	case PhysicalType::DOUBLE:
 		return BinaryScalarFunctionIgnoreZero<double, double, double, OP>;
 	default:
-		throw NotImplementedException("Unimplemented type for GetScalarUnaryFunction");
+		throw NotImplementedException("Unimplemented type for GetScalarUnaryFunction - Hello");
 	}
 }
 
