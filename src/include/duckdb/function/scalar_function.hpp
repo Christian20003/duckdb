@@ -17,6 +17,8 @@
 #include "duckdb/storage/statistics/base_statistics.hpp"
 #include "duckdb/common/optional_ptr.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct FunctionLocalState {
@@ -224,6 +226,9 @@ public:
 		case LogicalTypeId::UHUGEINT:
 			function = &ScalarFunction::UnaryFunction<uhugeint_t, uhugeint_t, OP>;
 			break;
+		case LogicalTypeId::HALF_FLOAT:
+			function = &ScalarFunction::UnaryFunction<std::bfloat16_t, std::bfloat16_t, OP>;
+			break;
 		case LogicalTypeId::FLOAT:
 			function = &ScalarFunction::UnaryFunction<float, float, OP>;
 			break;
@@ -231,7 +236,7 @@ public:
 			function = &ScalarFunction::UnaryFunction<double, double, OP>;
 			break;
 		default:
-			throw InternalException("Unimplemented type for GetScalarUnaryFunction");
+			throw InternalException("Unimplemented type for GetScalarUnaryFunction - Mr");
 		}
 		return function;
 	}
@@ -269,6 +274,9 @@ public:
 			break;
 		case LogicalTypeId::UHUGEINT:
 			function = &ScalarFunction::UnaryFunction<uhugeint_t, TR, OP>;
+			break;
+		case LogicalTypeId::HALF_FLOAT:
+			function = &ScalarFunction::UnaryFunction<std::bfloat16_t, TR, OP>;
 			break;
 		case LogicalTypeId::FLOAT:
 			function = &ScalarFunction::UnaryFunction<float, TR, OP>;

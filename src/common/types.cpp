@@ -32,6 +32,7 @@
 #include "duckdb/parser/parser.hpp"
 
 #include <cmath>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -92,6 +93,8 @@ PhysicalType LogicalType::GetInternalType() {
 	case LogicalTypeId::HUGEINT:
 	case LogicalTypeId::UUID:
 		return PhysicalType::INT128;
+	case LogicalTypeId::HALF_FLOAT:
+		return PhysicalType::HALF_FLOAT;
 	case LogicalTypeId::FLOAT:
 		return PhysicalType::FLOAT;
 	case LogicalTypeId::DOUBLE:
@@ -185,6 +188,7 @@ constexpr const LogicalTypeId LogicalType::UBIGINT;
 constexpr const LogicalTypeId LogicalType::HUGEINT;
 constexpr const LogicalTypeId LogicalType::UHUGEINT;
 constexpr const LogicalTypeId LogicalType::UUID;
+constexpr const LogicalTypeId LogicalType::HALF_FLOAT;
 constexpr const LogicalTypeId LogicalType::FLOAT;
 constexpr const LogicalTypeId LogicalType::DOUBLE;
 constexpr const LogicalTypeId LogicalType::DATE;
@@ -219,10 +223,10 @@ constexpr const LogicalTypeId LogicalType::ANY;
 
 const vector<LogicalType> LogicalType::Numeric() {
 	vector<LogicalType> types = {LogicalType::TINYINT,   LogicalType::SMALLINT,  LogicalType::INTEGER,
-	                             LogicalType::BIGINT,    LogicalType::HUGEINT,   LogicalType::FLOAT,
-	                             LogicalType::DOUBLE,    LogicalTypeId::DECIMAL, LogicalType::UTINYINT,
-	                             LogicalType::USMALLINT, LogicalType::UINTEGER,  LogicalType::UBIGINT,
-	                             LogicalType::UHUGEINT};
+	                             LogicalType::BIGINT,    LogicalType::HUGEINT,   LogicalType::HALF_FLOAT,
+								 LogicalType::FLOAT,	 LogicalType::DOUBLE,    LogicalTypeId::DECIMAL, 
+								 LogicalType::UTINYINT,	 LogicalType::USMALLINT, LogicalType::UINTEGER,  
+								 LogicalType::UBIGINT, 	 LogicalType::UHUGEINT};
 	return types;
 }
 
@@ -235,7 +239,7 @@ const vector<LogicalType> LogicalType::Integral() {
 }
 
 const vector<LogicalType> LogicalType::Real() {
-	vector<LogicalType> types = {LogicalType::FLOAT, LogicalType::DOUBLE};
+	vector<LogicalType> types = {LogicalType::HALF_FLOAT, LogicalType::FLOAT, LogicalType::DOUBLE};
 	return types;
 }
 
@@ -243,7 +247,7 @@ const vector<LogicalType> LogicalType::AllTypes() {
 	vector<LogicalType> types = {
 	    LogicalType::BOOLEAN,  LogicalType::TINYINT,      LogicalType::SMALLINT,  LogicalType::INTEGER,
 	    LogicalType::BIGINT,   LogicalType::DATE,         LogicalType::TIMESTAMP, LogicalType::DOUBLE,
-	    LogicalType::FLOAT,    LogicalType::VARCHAR,      LogicalType::BLOB,      LogicalType::BIT,
+	    LogicalType::HALF_FLOAT, LogicalType::FLOAT,    LogicalType::VARCHAR,      LogicalType::BLOB,      LogicalType::BIT,
 	    LogicalType::VARINT,   LogicalType::INTERVAL,     LogicalType::HUGEINT,   LogicalTypeId::DECIMAL,
 	    LogicalType::UTINYINT, LogicalType::USMALLINT,    LogicalType::UINTEGER,  LogicalType::UBIGINT,
 	    LogicalType::UHUGEINT, LogicalType::TIME,         LogicalTypeId::LIST,    LogicalTypeId::STRUCT,
@@ -279,6 +283,8 @@ string TypeIdToString(PhysicalType type) {
 		return "INT128";
 	case PhysicalType::UINT128:
 		return "UINT128";
+	case PhysicalType::HALF_FLOAT:
+		return "HALF_FLOAT";
 	case PhysicalType::FLOAT:
 		return "FLOAT";
 	case PhysicalType::DOUBLE:
@@ -329,6 +335,8 @@ idx_t GetTypeIdSize(PhysicalType type) {
 		return sizeof(hugeint_t);
 	case PhysicalType::UINT128:
 		return sizeof(uhugeint_t);
+	case PhysicalType::HALF_FLOAT:
+		return sizeof(std::bfloat16_t);
 	case PhysicalType::FLOAT:
 		return sizeof(float);
 	case PhysicalType::DOUBLE:
@@ -556,6 +564,7 @@ LogicalType TransformStringToLogicalType(const string &str) {
 		                                      "DATE",
 		                                      "DECIMAL(prec, scale)",
 		                                      "DOUBLE",
+											  "HALF_FLOAT",
 		                                      "FLOAT8",
 		                                      "FLOAT",
 		                                      "FLOAT4",
@@ -655,6 +664,7 @@ bool LogicalType::IsNumeric() const {
 	case LogicalTypeId::INTEGER:
 	case LogicalTypeId::BIGINT:
 	case LogicalTypeId::HUGEINT:
+	case LogicalTypeId::HALF_FLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 	case LogicalTypeId::DECIMAL:
@@ -1226,6 +1236,8 @@ static idx_t GetLogicalTypeScore(const LogicalType &type) {
 		return 20;
 	case LogicalTypeId::DECIMAL:
 		return 21;
+	case LogicalTypeId::HALF_FLOAT:
+		return 109;
 	case LogicalTypeId::FLOAT:
 		return 22;
 	case LogicalTypeId::DOUBLE:
