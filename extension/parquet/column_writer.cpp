@@ -31,6 +31,7 @@
 #include "zstd/common/xxhash.hpp"
 
 #include <cmath>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -2287,6 +2288,24 @@ struct double_na_equal {
 	double val;
 };
 
+struct half_float_na_equal {
+	half_float_na_equal() : val(0) {
+	}
+	explicit half_float_na_equal(const std::bfloat16_t val_p) : val(val_p) {
+	}
+	// NOLINTNEXTLINE: allow implicit conversion to float
+	operator std::bfloat16_t() const {
+		return val;
+	}
+	bool operator==(const std::bfloat16_t &right) const {
+		if (std::isnan(val) && std::isnan(right)) {
+			return true;
+		}
+		return val == right;
+	}
+	std::bfloat16_t val;
+};
+
 struct float_na_equal {
 	float_na_equal() : val(0) {
 	}
@@ -2524,6 +2543,9 @@ unique_ptr<ColumnWriter> ColumnWriter::CreateWriterRecursive(ClientContext &cont
 	case LogicalTypeId::UBIGINT:
 		return make_uniq<StandardColumnWriter<uint64_t, uint64_t>>(writer, schema_idx, std::move(schema_path),
 		                                                           max_repeat, max_define, can_have_nulls);
+	case LogicalTypeId::HALF_FLOAT:
+		return make_uniq<StandardColumnWriter<half_float_na_equal, float>>(writer, schema_idx, std::move(schema_path),
+																	  max_repeat, max_define, can_have_nulls);
 	case LogicalTypeId::FLOAT:
 		return make_uniq<StandardColumnWriter<float_na_equal, float>>(writer, schema_idx, std::move(schema_path),
 		                                                              max_repeat, max_define, can_have_nulls);
@@ -2562,6 +2584,22 @@ unique_ptr<ColumnWriter> ColumnWriter::CreateWriterRecursive(ClientContext &cont
 		throw InternalException("Unsupported type \"%s\" in Parquet writer", type.ToString());
 	}
 }
+
+template <>
+struct NumericLimits<half_float_na_equal> {
+	static constexpr std::bfloat16_t Minimum() {
+		return std::numeric_limits<std::bfloat16_t>::lowest();
+	};
+	static constexpr std::bfloat16_t Maximum() {
+		return std::numeric_limits<std::bfloat16_t>::max();
+	};
+	static constexpr bool IsSigned() {
+		return std::is_signed<std::bfloat16_t>::value;
+	}
+	static constexpr bool IsIntegral() {
+		return std::is_integral<std::bfloat16_t>::value;
+	}
+};
 
 template <>
 struct NumericLimits<float_na_equal> {
@@ -2610,6 +2648,16 @@ template <>
 struct hash<duckdb::ParquetUUIDTargetType> {
 	size_t operator()(const duckdb::ParquetUUIDTargetType &val) const {
 		return duckdb::Hash(duckdb::const_char_ptr_cast(val.bytes), duckdb::ParquetUUIDTargetType::PARQUET_UUID_SIZE);
+	}
+};
+
+template <>
+struct hash<duckdb::half_float_na_equal> {
+	size_t operator()(const duckdb::half_float_na_equal &val) const {
+		if (std::isnan(val.val)) {
+			return duckdb::Hash<std::bfloat16_t>(std::numeric_limits<std::bfloat16_t>::quiet_NaN());
+		}
+		return duckdb::Hash<std::bfloat16_t>(val.val);
 	}
 };
 

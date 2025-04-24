@@ -17,6 +17,8 @@
 #include "duckdb/common/unordered_set.hpp"
 #include "duckdb/execution/operator/csv_scanner/csv_reader_options.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 class Deserializer {
@@ -450,6 +452,12 @@ private:
 		return ReadUnsignedInt64();
 	}
 
+	// Deserialize a bfloat
+	template <typename T = void>
+	inline typename std::enable_if<std::is_same<T, std::bfloat16_t>::value, T>::type Read() {
+		return ReadHalfFloat();
+	}
+
 	// Deserialize a float
 	template <typename T = void>
 	inline typename std::enable_if<std::is_same<T, float>::value, T>::type Read() {
@@ -539,6 +547,7 @@ protected:
 	virtual uint64_t ReadUnsignedInt64() = 0;
 	virtual hugeint_t ReadHugeInt() = 0;
 	virtual uhugeint_t ReadUhugeInt() = 0;
+	virtual std::bfloat16_t ReadHalfFloat() = 0;
 	virtual float ReadFloat() = 0;
 	virtual double ReadDouble() = 0;
 	virtual string ReadString() = 0;

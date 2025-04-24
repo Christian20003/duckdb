@@ -4,6 +4,8 @@
 #include "duckdb/function/cast/default_casts.hpp"
 #include "duckdb/function/cast/vector_cast_helpers.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 BoundCastInfo DefaultCasts::BitCastSwitch(BindCastInput &input, const LogicalType &source, const LogicalType &target) {
@@ -32,6 +34,8 @@ BoundCastInfo DefaultCasts::BitCastSwitch(BindCastInput &input, const LogicalTyp
 		return BoundCastInfo(&VectorCastHelpers::TryCastErrorLoop<string_t, hugeint_t, CastFromBitToNumeric>);
 	case LogicalTypeId::UHUGEINT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastErrorLoop<string_t, uhugeint_t, CastFromBitToNumeric>);
+	case LogicalTypeId::HALF_FLOAT:
+		return BoundCastInfo(&VectorCastHelpers::TryCastErrorLoop<string_t, std::bfloat16_t, CastFromBitToNumeric>);
 	case LogicalTypeId::FLOAT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastErrorLoop<string_t, float, CastFromBitToNumeric>);
 	case LogicalTypeId::DOUBLE:

@@ -12,6 +12,7 @@
 #include "utf8proc_wrapper.hpp"
 
 #include <algorithm>
+//#include <stdfloat>
 
 namespace duckdb {
 
@@ -329,6 +330,10 @@ void StringValueResult::AddValueToVector(const char *value_ptr, const idx_t size
 		success =
 		    TryDoubleCast<double>(value_ptr, size, static_cast<double *>(vector_ptr[chunk_col_id])[number_of_rows],
 		                          false, state_machine.options.decimal_separator[0]);
+		break;
+	case LogicalTypeId::HALF_FLOAT:
+		success = TryDoubleCast<float>(value_ptr, size, static_cast<float *>(vector_ptr[chunk_col_id])[number_of_rows],
+		                               false, state_machine.options.decimal_separator[0]);
 		break;
 	case LogicalTypeId::FLOAT:
 		success = TryDoubleCast<float>(value_ptr, size, static_cast<float *>(vector_ptr[chunk_col_id])[number_of_rows],
@@ -1645,6 +1650,7 @@ bool StringValueScanner::CanDirectlyCast(const LogicalType &type, bool icu_loade
 	case LogicalTypeId::UINTEGER:
 	case LogicalTypeId::UBIGINT:
 	case LogicalTypeId::DOUBLE:
+	case LogicalTypeId::HALF_FLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DATE:
 	case LogicalTypeId::TIMESTAMP:

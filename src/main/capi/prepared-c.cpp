@@ -273,6 +273,11 @@ duckdb_state duckdb_bind_uint64(duckdb_prepared_statement prepared_statement, id
 	return duckdb_bind_value(prepared_statement, param_idx, (duckdb_value)&value);
 }
 
+duckdb_state duckdb_bind_half_float(duckdb_prepared_statement prepared_statement, idx_t param_idx, std::bfloat16_t val) {
+	auto value = Value::HALF_FLOAT(val);
+	return duckdb_bind_value(prepared_statement, param_idx, (duckdb_value)&value);
+}
+
 duckdb_state duckdb_bind_float(duckdb_prepared_statement prepared_statement, idx_t param_idx, float val) {
 	auto value = Value::FLOAT(val);
 	return duckdb_bind_value(prepared_statement, param_idx, (duckdb_value)&value);

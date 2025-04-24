@@ -11,6 +11,8 @@
 #include "duckdb_python/pyresult.hpp"
 #include "duckdb/common/types/uuid.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 namespace duckdb_py_convert {
@@ -616,6 +618,9 @@ void ArrayWrapper::Append(idx_t current_offset, Vector &input, idx_t source_size
 		break;
 	case LogicalTypeId::UHUGEINT:
 		may_have_null = ConvertColumn<uhugeint_t, double, duckdb_py_convert::IntegralConvert>(append_data);
+		break;
+	case LogicalTypeId::HALF_FLOAT:
+		may_have_null = ConvertColumnRegular<std::bfloat16_t>(append_data);
 		break;
 	case LogicalTypeId::FLOAT:
 		may_have_null = ConvertColumnRegular<float>(append_data);

@@ -13,6 +13,8 @@
 #include "duckdb/common/limits.hpp"
 #include "duckdb/common/exception.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //! The Hugeint class contains static operations for the INT128 type
@@ -194,6 +196,8 @@ template <>
 DUCKDB_API bool Hugeint::TryCast(hugeint_t input, hugeint_t &result);
 template <>
 DUCKDB_API bool Hugeint::TryCast(hugeint_t input, uhugeint_t &result);
+template <>
+DUCKDB_API bool Hugeint::TryCast(hugeint_t input, std::bfloat16_t &result);
 template <>
 DUCKDB_API bool Hugeint::TryCast(hugeint_t input, float &result);
 template <>

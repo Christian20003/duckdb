@@ -11,6 +11,8 @@
 #include "duckdb_python/pyresult.hpp"
 #include "duckdb/common/types/uuid.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 static idx_t GetNumpyTypeWidth(const LogicalType &type) {
@@ -33,6 +35,8 @@ static idx_t GetNumpyTypeWidth(const LogicalType &type) {
 		return sizeof(int32_t);
 	case LogicalTypeId::BIGINT:
 		return sizeof(int64_t);
+	case LogicalTypeId::HALF_FLOAT:
+		return sizeof(std::bfloat16_t);
 	case LogicalTypeId::FLOAT:
 		return sizeof(float);
 	case LogicalTypeId::HUGEINT:
@@ -89,6 +93,8 @@ string RawArrayWrapper::DuckDBToNumpyDtype(const LogicalType &type) {
 		return "uint32";
 	case LogicalTypeId::UBIGINT:
 		return "uint64";
+	case LogicalTypeId::HALF_FLOAT:
+		return "bfloat16";
 	case LogicalTypeId::FLOAT:
 		return "float32";
 	case LogicalTypeId::HUGEINT:

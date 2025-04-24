@@ -94,6 +94,10 @@ uint64_t duckdb_value_uint64(duckdb_result *result, idx_t col, idx_t row) {
 	return GetInternalCValue<uint64_t>(result, col, row);
 }
 
+std::bfloat16_t duckdb_value_half_float(duckdb_result *result, idx_t col, idx_t row) {
+	return GetInternalCValue<std::bfloat16_t>(result, col, row);
+}
+
 float duckdb_value_float(duckdb_result *result, idx_t col, idx_t row) {
 	return GetInternalCValue<float>(result, col, row);
 }

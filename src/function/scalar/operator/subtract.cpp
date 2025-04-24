@@ -14,6 +14,12 @@ namespace duckdb {
 // - [subtract]
 //===--------------------------------------------------------------------===//
 template <>
+std::bfloat16_t SubtractOperator::Operation(std::bfloat16_t left, std::bfloat16_t right) {
+	auto result = left - right;
+	return result;
+}
+
+template <>
 float SubtractOperator::Operation(float left, float right) {
 	auto result = left - right;
 	return result;

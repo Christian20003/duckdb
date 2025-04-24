@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdlib.h>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -155,6 +156,9 @@ static AggregateFunction GetApproximateQuantileAggregateFunction(const LogicalTy
 	case PhysicalType::INT128:
 		return AggregateFunction::UnaryAggregateDestructor<ApproxQuantileState, hugeint_t, hugeint_t,
 		                                                   ApproxQuantileScalarOperation>(type, type);
+	case PhysicalType::HALF_FLOAT:
+		return AggregateFunction::UnaryAggregateDestructor<ApproxQuantileState, std::bfloat16_t, std::bfloat16_t,
+														   ApproxQuantileScalarOperation>(type, type);
 	case PhysicalType::FLOAT:
 		return AggregateFunction::UnaryAggregateDestructor<ApproxQuantileState, float, float,
 		                                                   ApproxQuantileScalarOperation>(type, type);
@@ -327,6 +331,8 @@ AggregateFunction GetApproxQuantileListAggregateFunction(const LogicalType &type
 		return GetTypedApproxQuantileListAggregateFunction<dtime_tz_t, dtime_tz_t>(type);
 	case LogicalTypeId::HUGEINT:
 		return GetTypedApproxQuantileListAggregateFunction<hugeint_t, hugeint_t>(type);
+	case LogicalTypeId::HALF_FLOAT:
+		return GetTypedApproxQuantileListAggregateFunction<std::bfloat16_t, std::bfloat16_t>(type);
 	case LogicalTypeId::FLOAT:
 		return GetTypedApproxQuantileListAggregateFunction<float, float>(type);
 	case LogicalTypeId::DOUBLE:
@@ -429,6 +435,7 @@ AggregateFunctionSet ApproxQuantileFun::GetFunctions() {
 	approx_quantile.AddFunction(GetApproxQuantileListAggregate(LogicalTypeId::INTEGER));
 	approx_quantile.AddFunction(GetApproxQuantileListAggregate(LogicalTypeId::BIGINT));
 	approx_quantile.AddFunction(GetApproxQuantileListAggregate(LogicalTypeId::HUGEINT));
+	approx_quantile.AddFunction(GetApproxQuantileListAggregate(LogicalTypeId::HALF_FLOAT));
 	approx_quantile.AddFunction(GetApproxQuantileListAggregate(LogicalTypeId::FLOAT));
 	approx_quantile.AddFunction(GetApproxQuantileListAggregate(LogicalTypeId::DOUBLE));
 

@@ -121,6 +121,9 @@ bool BoundCastExpression::CastIsInvertible(const LogicalType &source_type, const
 	if (source_type.id() == LogicalTypeId::BOOLEAN || target_type.id() == LogicalTypeId::BOOLEAN) {
 		return false;
 	}
+	if (source_type.id() == LogicalTypeId::HALF_FLOAT || target_type.id() == LogicalTypeId::HALF_FLOAT) {
+		return false;
+	}
 	if (source_type.id() == LogicalTypeId::FLOAT || target_type.id() == LogicalTypeId::FLOAT) {
 		return false;
 	}

@@ -18,6 +18,7 @@
 #undef max
 
 #include <limits>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -118,6 +119,11 @@ constexpr idx_t NumericLimits<uint64_t>::Digits() {
 
 template <>
 constexpr idx_t NumericLimits<float>::Digits() {
+	return 127;
+}
+
+template <>
+constexpr idx_t NumericLimits<std::bfloat16_t>::Digits() {
 	return 127;
 }
 

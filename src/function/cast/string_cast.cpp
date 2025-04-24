@@ -8,6 +8,8 @@
 #include "duckdb/function/cast/bound_cast_data.hpp"
 #include "duckdb/common/types/varint.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 template <class T>
@@ -107,6 +109,8 @@ static BoundCastInfo VectorStringCastNumericSwitch(BindCastInput &input, const L
 		return BoundCastInfo(&VectorCastHelpers::TryCastStrictLoop<string_t, hugeint_t, duckdb::TryCast>);
 	case LogicalTypeId::UHUGEINT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastStrictLoop<string_t, uhugeint_t, duckdb::TryCast>);
+	case LogicalTypeId::HALF_FLOAT:
+		return BoundCastInfo(&VectorCastHelpers::TryCastStrictLoop<string_t, std::bfloat16_t, duckdb::TryCast>);
 	case LogicalTypeId::FLOAT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastStrictLoop<string_t, float, duckdb::TryCast>);
 	case LogicalTypeId::DOUBLE:

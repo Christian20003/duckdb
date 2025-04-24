@@ -13,6 +13,8 @@
 #include "duckdb/common/type_util.hpp"
 #include "duckdb/common/types/cast_helpers.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct interval_t;
@@ -24,6 +26,8 @@ struct MultiplyOperator {
 	}
 };
 
+template <>
+std::bfloat16_t MultiplyOperator::Operation(std::bfloat16_t left, std::bfloat16_t right);
 template <>
 float MultiplyOperator::Operation(float left, float right);
 template <>

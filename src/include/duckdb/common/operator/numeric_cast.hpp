@@ -16,6 +16,7 @@
 #include "duckdb/common/types/value.hpp"
 #include "duckdb/common/types/vector.hpp"
 #include <cmath>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -81,6 +82,47 @@ bool TryCastWithOverflowCheckFloat(SRC value, T &result, SRC min, SRC max) {
 	// PG FLOAT => INT casts use statistical rounding.
 	result = static_cast<T>(std::nearbyint(value));
 	return true;
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, int8_t &result) {
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int8_t>(value, result, -128.0f, 128.0f);
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, int16_t &result) {
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int16_t>(value, result, -32768.0f, 32768.0f);
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, int32_t &result) {
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int32_t>(value, result, -2147483648.0f, 2147483648.0f);
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, int64_t &result) {
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int64_t>(value, result, -9223372036854775808.0f,
+	                                                     9223372036854775808.0f);
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, uint8_t &result) {
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint8_t>(value, result, 0.0f, 256.0f);
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, uint16_t &result) {
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint16_t>(value, result, 0.0f, 65536.0f);
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, uint32_t &result) {
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint32_t>(value, result, 0.0f, 4294967296.0f);
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, uint64_t &result) {
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint64_t>(value, result, 0.0f, 18446744073709551616.0f);
 }
 
 template <>
@@ -164,6 +206,21 @@ bool TryCastWithOverflowCheck(double value, uint64_t &result) {
 	return TryCastWithOverflowCheckFloat<double, uint64_t>(value, result, 0.0, 18446744073709551615.0);
 }
 template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t input, std::bfloat16_t &result) {
+	result = input;
+	return true;
+}
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t input, float &result) {
+	result = float(input);
+	return true;
+}
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t input, double &result) {
+	result = double(input);
+	return true;
+}
+template <>
 bool TryCastWithOverflowCheck(float input, float &result) {
 	result = input;
 	return true;
@@ -171,6 +228,15 @@ bool TryCastWithOverflowCheck(float input, float &result) {
 template <>
 bool TryCastWithOverflowCheck(float input, double &result) {
 	result = double(input);
+	return true;
+}
+template <>
+bool TryCastWithOverflowCheck(float input, std::bfloat16_t &result) {
+	auto res = static_cast<std::bfloat16_t>(input);
+	if (!Value::HalfFloatIsFinite(res)) {
+		return false;
+	}
+	result = res;
 	return true;
 }
 template <>
@@ -187,6 +253,20 @@ bool TryCastWithOverflowCheck(double input, float &result) {
 	}
 	auto res = float(input);
 	if (!Value::FloatIsFinite(res)) {
+		return false;
+	}
+	result = res;
+	return true;
+}
+
+template <>
+bool TryCastWithOverflowCheck(double input, std::bfloat16_t &result) {
+	if (!Value::IsFinite(input)) {
+		result = static_cast<std::bfloat16_t>(input);
+		return true;
+	}
+	auto res = static_cast<std::bfloat16_t>(input);
+	if (!Value::HalfFloatIsFinite(res)) {
 		return false;
 	}
 	result = res;
@@ -246,6 +326,12 @@ bool TryCastWithOverflowCheck(uint32_t value, bool &result) {
 
 template <>
 bool TryCastWithOverflowCheck(uint64_t value, bool &result) {
+	result = bool(value);
+	return true;
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, bool &result) {
 	result = bool(value);
 	return true;
 }
@@ -326,6 +412,12 @@ bool TryCastWithOverflowCheck(bool value, uint64_t &result) {
 }
 
 template <>
+bool TryCastWithOverflowCheck(bool value, std::bfloat16_t&result) {
+	result = static_cast<std::bfloat16_t>(value);
+	return true;
+}
+
+template <>
 bool TryCastWithOverflowCheck(bool value, float &result) {
 	result = float(value);
 	return true;
@@ -395,6 +487,12 @@ bool TryCastWithOverflowCheck(uint64_t value, hugeint_t &result) {
 }
 
 template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, hugeint_t &result) {
+	float val = static_cast<float>(value);
+	return Hugeint::TryConvert(std::nearbyintf(val), result);
+}
+
+template <>
 bool TryCastWithOverflowCheck(float value, hugeint_t &result) {
 	return Hugeint::TryConvert(std::nearbyintf(value), result);
 }
@@ -459,6 +557,11 @@ bool TryCastWithOverflowCheck(hugeint_t value, uhugeint_t &result) {
 }
 
 template <>
+bool TryCastWithOverflowCheck(hugeint_t value, std::bfloat16_t &result) {
+	return Hugeint::TryCast(value, result);
+}
+
+template <>
 bool TryCastWithOverflowCheck(hugeint_t value, float &result) {
 	return Hugeint::TryCast(value, result);
 }
@@ -513,6 +616,11 @@ bool TryCastWithOverflowCheck(uhugeint_t value, uint64_t &result) {
 
 template <>
 bool TryCastWithOverflowCheck(uhugeint_t value, hugeint_t &result) {
+	return Uhugeint::TryCast(value, result);
+}
+
+template <>
+bool TryCastWithOverflowCheck(uhugeint_t value, std::bfloat16_t &result) {
 	return Uhugeint::TryCast(value, result);
 }
 
@@ -573,6 +681,12 @@ bool TryCastWithOverflowCheck(uint32_t value, uhugeint_t &result) {
 template <>
 bool TryCastWithOverflowCheck(uint64_t value, uhugeint_t &result) {
 	return Uhugeint::TryConvert(value, result);
+}
+
+template <>
+bool TryCastWithOverflowCheck(std::bfloat16_t value, uhugeint_t &result) {
+	float val = static_cast<float>(value);
+	return Uhugeint::TryConvert(std::nearbyintf(val), result);
 }
 
 template <>

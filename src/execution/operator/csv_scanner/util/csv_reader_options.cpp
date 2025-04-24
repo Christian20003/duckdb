@@ -6,6 +6,8 @@
 #include "duckdb/common/multi_file_reader.hpp"
 #include "duckdb/common/set.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 CSVReaderOptions::CSVReaderOptions(const CSVOption<char> single_byte_delimiter,
@@ -40,7 +42,7 @@ static bool ParseBoolean(const Value &value, const string &loption) {
 		return ParseBoolean(children, loption);
 	}
 	if (value.type() == LogicalType::FLOAT || value.type() == LogicalType::DOUBLE ||
-	    value.type().id() == LogicalTypeId::DECIMAL) {
+	    value.type().id() == LogicalTypeId::DECIMAL || value.type() == LogicalType::HALF_FLOAT) {
 		throw BinderException("\"%s\" expects a boolean value (e.g. TRUE or 1)", loption);
 	}
 	return BooleanValue::Get(value.DefaultCastAs(LogicalType::BOOLEAN));
@@ -513,7 +515,7 @@ static uint8_t GetCandidateSpecificity(const LogicalType &candidate_type) {
 	    {static_cast<uint8_t>(LogicalTypeId::SMALLINT), 6},  {static_cast<uint8_t>(LogicalTypeId::TINYINT), 7},
 	    {static_cast<uint8_t>(LogicalTypeId::TIMESTAMP), 8}, {static_cast<uint8_t>(LogicalTypeId::DATE), 9},
 	    {static_cast<uint8_t>(LogicalTypeId::TIME), 10},     {static_cast<uint8_t>(LogicalTypeId::BOOLEAN), 11},
-	    {static_cast<uint8_t>(LogicalTypeId::SQLNULL), 12}};
+	    {static_cast<uint8_t>(LogicalTypeId::SQLNULL), 12},  {static_cast<std::bfloat16_t>(LogicalTypeId::HALF_FLOAT), 13}};
 
 	auto id = static_cast<uint8_t>(candidate_type.id());
 	auto it = auto_type_candidates_specificity.find(id);

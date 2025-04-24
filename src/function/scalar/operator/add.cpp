@@ -15,6 +15,12 @@ namespace duckdb {
 // + [add]
 //===--------------------------------------------------------------------===//
 template <>
+std::bfloat16_t AddOperator::Operation(std::bfloat16_t left, std::bfloat16_t right) {
+	auto result = left + right;
+	return result;
+}
+
+template <>
 float AddOperator::Operation(float left, float right) {
 	auto result = left + right;
 	return result;

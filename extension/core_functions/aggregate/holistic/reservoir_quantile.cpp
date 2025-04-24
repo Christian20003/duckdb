@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <stdlib.h>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -194,6 +195,10 @@ AggregateFunction GetReservoirQuantileAggregateFunction(PhysicalType type) {
 		return AggregateFunction::UnaryAggregateDestructor<ReservoirQuantileState<hugeint_t>, hugeint_t, hugeint_t,
 		                                                   ReservoirQuantileScalarOperation>(LogicalType::HUGEINT,
 		                                                                                     LogicalType::HUGEINT);
+	case PhysicalType::HALF_FLOAT:
+		return AggregateFunction::UnaryAggregateDestructor<ReservoirQuantileState<std::bfloat16_t>, std::bfloat16_t, std::bfloat16_t,
+														   ReservoirQuantileScalarOperation>(LogicalType::HALF_FLOAT,
+																							 LogicalType::HALF_FLOAT);
 	case PhysicalType::FLOAT:
 		return AggregateFunction::UnaryAggregateDestructor<ReservoirQuantileState<float>, float, float,
 		                                                   ReservoirQuantileScalarOperation>(LogicalType::FLOAT,
@@ -271,6 +276,8 @@ AggregateFunction GetReservoirQuantileListAggregateFunction(const LogicalType &t
 		return GetTypedReservoirQuantileListAggregateFunction<int64_t, int64_t>(type);
 	case LogicalTypeId::HUGEINT:
 		return GetTypedReservoirQuantileListAggregateFunction<hugeint_t, hugeint_t>(type);
+	case LogicalTypeId::HALF_FLOAT:
+		return GetTypedReservoirQuantileListAggregateFunction<std::bfloat16_t, std::bfloat16_t>(type);
 	case LogicalTypeId::FLOAT:
 		return GetTypedReservoirQuantileListAggregateFunction<float, float>(type);
 	case LogicalTypeId::DOUBLE:
@@ -441,6 +448,7 @@ AggregateFunctionSet ReservoirQuantileFun::GetFunctions() {
 	DefineReservoirQuantile(reservoir_quantile, LogicalTypeId::INTEGER);
 	DefineReservoirQuantile(reservoir_quantile, LogicalTypeId::BIGINT);
 	DefineReservoirQuantile(reservoir_quantile, LogicalTypeId::HUGEINT);
+	DefineReservoirQuantile(reservoir_quantile, LogicalTypeId::HALF_FLOAT);
 	DefineReservoirQuantile(reservoir_quantile, LogicalTypeId::FLOAT);
 	DefineReservoirQuantile(reservoir_quantile, LogicalTypeId::DOUBLE);
 	return reservoir_quantile;

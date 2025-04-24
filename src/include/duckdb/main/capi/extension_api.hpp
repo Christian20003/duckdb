@@ -396,6 +396,7 @@ typedef struct {
 	duckdb_state (*duckdb_append_uint32)(duckdb_appender appender, uint32_t value);
 	duckdb_state (*duckdb_append_uint64)(duckdb_appender appender, uint64_t value);
 	duckdb_state (*duckdb_append_uhugeint)(duckdb_appender appender, duckdb_uhugeint value);
+	duckdb_state (*duckdb_append_half_float)(duckdb_appender appender, std::bfloat16_t value);
 	duckdb_state (*duckdb_append_float)(duckdb_appender appender, float value);
 	duckdb_state (*duckdb_append_double)(duckdb_appender appender, double value);
 	duckdb_state (*duckdb_append_date)(duckdb_appender appender, duckdb_date value);
