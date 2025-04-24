@@ -11,6 +11,8 @@
 #include "json_functions.hpp"
 #include "json_scan.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 JSONTransformOptions::JSONTransformOptions() : parameters(false, &error_message) {
@@ -890,6 +892,8 @@ bool JSONTransform::Transform(yyjson_val *vals[], yyjson_alc *alc, Vector &resul
 		return TransformNumerical<hugeint_t>(vals, result, count, options);
 	case LogicalTypeId::UHUGEINT:
 		return TransformNumerical<uhugeint_t>(vals, result, count, options);
+	case LogicalTypeId::HALF_FLOAT:
+		return TransformNumerical<std::bfloat16_t>(vals, result, count, options);
 	case LogicalTypeId::FLOAT:
 		return TransformNumerical<float>(vals, result, count, options);
 	case LogicalTypeId::DOUBLE:

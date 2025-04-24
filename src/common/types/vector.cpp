@@ -25,6 +25,7 @@
 #include "fsst.h"
 
 #include <cstring> // strlen() on Solaris
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -477,6 +478,9 @@ void Vector::SetValue(idx_t index, const Value &val) {
 	case PhysicalType::UINT128:
 		reinterpret_cast<uhugeint_t *>(data)[index] = val.GetValueUnsafe<uhugeint_t>();
 		break;
+	case PhysicalType::HALF_FLOAT:
+		reinterpret_cast<std::bfloat16_t*>(data)[index] = val.GetValueUnsafe<std::bfloat16_t>();
+		break;
 	case PhysicalType::FLOAT:
 		reinterpret_cast<float *>(data)[index] = val.GetValueUnsafe<float>();
 		break;
@@ -685,6 +689,8 @@ Value Vector::GetValueInternal(const Vector &v_p, idx_t index_p) {
 	}
 	case LogicalTypeId::POINTER:
 		return Value::POINTER(reinterpret_cast<uintptr_t *>(data)[index]);
+	case LogicalTypeId::HALF_FLOAT:
+		return Value::HALF_FLOAT(reinterpret_cast<std::bfloat16_t *>(data)[index]);
 	case LogicalTypeId::FLOAT:
 		return Value::FLOAT(reinterpret_cast<float *>(data)[index]);
 	case LogicalTypeId::DOUBLE:
@@ -998,6 +1004,9 @@ void Vector::Flatten(idx_t count) {
 			break;
 		case PhysicalType::UINT128:
 			TemplatedFlattenConstantVector<uhugeint_t>(data, old_data, count);
+			break;
+		case PhysicalType::HALF_FLOAT:
+			TemplatedFlattenConstantVector<std::bfloat16_t>(data, old_data, count);
 			break;
 		case PhysicalType::FLOAT:
 			TemplatedFlattenConstantVector<float>(data, old_data, count);

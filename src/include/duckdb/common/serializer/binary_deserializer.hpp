@@ -12,6 +12,8 @@
 #include "duckdb/common/serializer/encoding_util.hpp"
 #include "duckdb/common/serializer/read_stream.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 class ClientContext;
 
@@ -146,6 +148,7 @@ private:
 	uint32_t ReadUnsignedInt32() final;
 	int64_t ReadSignedInt64() final;
 	uint64_t ReadUnsignedInt64() final;
+	std::bfloat16_t ReadHalfFloat() final;
 	float ReadFloat() final;
 	double ReadDouble() final;
 	string ReadString() final;

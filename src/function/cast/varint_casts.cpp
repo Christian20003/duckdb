@@ -3,6 +3,7 @@
 #include "duckdb/function/cast/vector_cast_helpers.hpp"
 #include "duckdb/common/types/varint.hpp"
 #include <cmath>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -228,6 +229,12 @@ bool TryCastToVarInt::Operation(double double_value, string_t &result_value, Vec
 }
 
 template <>
+bool TryCastToVarInt::Operation(std::bfloat16_t double_value, string_t &result_value, Vector &result,
+                                CastParameters &parameters) {
+	return DoubleToVarInt(double_value, result_value, result);
+}
+
+template <>
 bool TryCastToVarInt::Operation(float double_value, string_t &result_value, Vector &result,
                                 CastParameters &parameters) {
 	return DoubleToVarInt(double_value, result_value, result);
@@ -254,6 +261,8 @@ BoundCastInfo Varint::NumericToVarintCastSwitch(const LogicalType &source) {
 		return BoundCastInfo(&VectorCastHelpers::StringCast<uint64_t, IntCastToVarInt>);
 	case LogicalTypeId::UHUGEINT:
 		return BoundCastInfo(&VectorCastHelpers::StringCast<uhugeint_t, HugeintCastToVarInt>);
+	case LogicalTypeId::HALF_FLOAT:
+		return BoundCastInfo(&VectorCastHelpers::TryCastStringLoop<std::bfloat16_t, string_t, TryCastToVarInt>);
 	case LogicalTypeId::FLOAT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastStringLoop<float, string_t, TryCastToVarInt>);
 	case LogicalTypeId::DOUBLE:

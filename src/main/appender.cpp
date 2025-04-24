@@ -216,6 +216,9 @@ void BaseAppender::AppendValueInternal(T input) {
 	case LogicalTypeId::UHUGEINT:
 		AppendValueInternal<T, uhugeint_t>(col, input);
 		break;
+	case LogicalTypeId::HALF_FLOAT:
+		AppendValueInternal<T, std::bfloat16_t>(col, input);
+		break;
 	case LogicalTypeId::FLOAT:
 		AppendValueInternal<T, float>(col, input);
 		break;
@@ -333,6 +336,11 @@ void BaseAppender::Append(const char *value, uint32_t length) {
 template <>
 void BaseAppender::Append(string_t value) {
 	AppendValueInternal<string_t>(value);
+}
+
+template <>
+void BaseAppender::Append(std::bfloat16_t value) {
+	AppendValueInternal<std::bfloat16_t>(value);
 }
 
 template <>

@@ -21,6 +21,8 @@
 #include "utf8proc_wrapper.hpp"
 #include "zstd.h"
 
+#include <stdfloat>
+
 #ifndef DUCKDB_AMALGAMATION
 #include "duckdb/common/helper.hpp"
 #include "duckdb/common/types/bit.hpp"
@@ -624,7 +626,6 @@ idx_t ColumnReader::Read(uint64_t num_values, parquet_filter_t &filter, data_ptr
 			DeltaByteArray(define_out, read_now, filter, result_offset, result);
 		} else if (bss_decoder) {
 			auto read_buf = make_shared_ptr<ResizeableBuffer>();
-
 			switch (schema.type) {
 			case duckdb_parquet::Type::FLOAT:
 				read_buf->resize(reader.allocator, sizeof(float) * (read_now - null_count));
@@ -1569,6 +1570,9 @@ unique_ptr<ColumnReader> ColumnReader::CreateReader(ParquetReader &reader, const
 	case LogicalTypeId::BIGINT:
 		return make_uniq<TemplatedColumnReader<int64_t, TemplatedParquetValueConversion<int64_t>>>(
 		    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
+	case LogicalTypeId::HALF_FLOAT:
+		return make_uniq<TemplatedColumnReader<std::bfloat16_t, TemplatedParquetValueConversion<float>>>(
+			reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
 	case LogicalTypeId::FLOAT:
 		return make_uniq<TemplatedColumnReader<float, TemplatedParquetValueConversion<float>>>(
 		    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);

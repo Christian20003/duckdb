@@ -13,6 +13,8 @@
 #include "duckdb/common/exception.hpp"
 #include "duckdb/common/types/cast_helpers.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct AddOperator {
@@ -22,6 +24,8 @@ struct AddOperator {
 	}
 };
 
+template <>
+std::bfloat16_t AddOperator::Operation(std::bfloat16_t left, std::bfloat16_t right);
 template <>
 float AddOperator::Operation(float left, float right);
 template <>

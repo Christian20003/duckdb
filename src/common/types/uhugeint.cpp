@@ -404,6 +404,14 @@ bool Uhugeint::TryCast(uhugeint_t input, hugeint_t &result) {
 }
 
 template <>
+bool Uhugeint::TryCast(uhugeint_t input, std::bfloat16_t&result) {
+	double dbl_result;
+	Uhugeint::TryCast(input, dbl_result);
+	result = static_cast<std::bfloat16_t>(dbl_result);
+	return true;
+}
+
+template <>
 bool Uhugeint::TryCast(uhugeint_t input, float &result) {
 	double dbl_result;
 	Uhugeint::TryCast(input, dbl_result);

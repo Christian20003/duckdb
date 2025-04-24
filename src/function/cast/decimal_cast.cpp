@@ -6,6 +6,8 @@
 #include "duckdb/common/vector_operations/unary_executor.hpp"
 #include "duckdb/common/types/cast_helpers.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 template <class T>
@@ -298,6 +300,8 @@ BoundCastInfo DefaultCasts::DecimalCastSwitch(BindCastInput &input, const Logica
 			throw NotImplementedException("Unimplemented internal type for decimal in decimal_decimal cast");
 		}
 	}
+	case LogicalTypeId::HALF_FLOAT:
+		return FromDecimalCast<std::bfloat16_t>;
 	case LogicalTypeId::FLOAT:
 		return FromDecimalCast<float>;
 	case LogicalTypeId::DOUBLE:

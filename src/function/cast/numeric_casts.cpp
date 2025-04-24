@@ -32,6 +32,8 @@ static BoundCastInfo InternalNumericCastSwitch(const LogicalType &source, const 
 		return BoundCastInfo(&VectorCastHelpers::TryCastLoop<SRC, hugeint_t, duckdb::NumericTryCast>);
 	case LogicalTypeId::UHUGEINT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastLoop<SRC, uhugeint_t, duckdb::NumericTryCast>);
+	case LogicalTypeId::HALF_FLOAT:
+		return BoundCastInfo(&VectorCastHelpers::TryCastLoop<SRC, std::bfloat16_t, duckdb::NumericTryCast>);
 	case LogicalTypeId::FLOAT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastLoop<SRC, float, duckdb::NumericTryCast>);
 	case LogicalTypeId::DOUBLE:
@@ -74,6 +76,8 @@ BoundCastInfo DefaultCasts::NumericCastSwitch(BindCastInput &input, const Logica
 		return InternalNumericCastSwitch<hugeint_t>(source, target);
 	case LogicalTypeId::UHUGEINT:
 		return InternalNumericCastSwitch<uhugeint_t>(source, target);
+	case LogicalTypeId::HALF_FLOAT:
+		return InternalNumericCastSwitch<std::bfloat16_t>(source, target);
 	case LogicalTypeId::FLOAT:
 		return InternalNumericCastSwitch<float>(source, target);
 	case LogicalTypeId::DOUBLE:

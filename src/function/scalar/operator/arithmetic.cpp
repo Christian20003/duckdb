@@ -65,6 +65,9 @@ template <class OP>
 static scalar_function_t GetScalarBinaryFunction(PhysicalType type) {
 	scalar_function_t function;
 	switch (type) {
+	case PhysicalType::HALF_FLOAT:
+		function = &ScalarFunction::BinaryFunction<std::bfloat16_t, std::bfloat16_t, std::bfloat16_t, OP>;
+		break;
 	case PhysicalType::FLOAT:
 		function = &ScalarFunction::BinaryFunction<float, float, float, OP>;
 		break;
@@ -899,6 +902,12 @@ ScalarFunctionSet OperatorMultiplyFun::GetFunctions() {
 // / [divide]
 //===--------------------------------------------------------------------===//
 template <>
+std::bfloat16_t DivideOperator::Operation(std::bfloat16_t left, std::bfloat16_t right) {
+	auto result = left / right;
+	return result;
+}
+
+template <>
 float DivideOperator::Operation(float left, float right) {
 	auto result = left / right;
 	return result;
@@ -1013,7 +1022,7 @@ static scalar_function_t GetBinaryFunctionIgnoreZero(PhysicalType type) {
 	case PhysicalType::DOUBLE:
 		return BinaryScalarFunctionIgnoreZero<double, double, double, OP>;
 	default:
-		throw NotImplementedException("Unimplemented type for GetScalarUnaryFunction - Hello");
+		throw NotImplementedException("Unimplemented type for GetScalarUnaryFunction");
 	}
 }
 
@@ -1031,6 +1040,8 @@ unique_ptr<FunctionData> BindBinaryFloatingPoint(ClientContext &context, ScalarF
 
 ScalarFunctionSet OperatorFloatDivideFun::GetFunctions() {
 	ScalarFunctionSet fp_divide("/");
+	fp_divide.AddFunction(ScalarFunction({LogicalType::HALF_FLOAT, LogicalType::HALF_FLOAT}, LogicalType::HALF_FLOAT, nullptr,
+										 BindBinaryFloatingPoint<DivideOperator>));
 	fp_divide.AddFunction(ScalarFunction({LogicalType::FLOAT, LogicalType::FLOAT}, LogicalType::FLOAT, nullptr,
 	                                     BindBinaryFloatingPoint<DivideOperator>));
 	fp_divide.AddFunction(ScalarFunction({LogicalType::DOUBLE, LogicalType::DOUBLE}, LogicalType::DOUBLE, nullptr,
@@ -1081,6 +1092,12 @@ unique_ptr<FunctionData> BindDecimalModulo(ClientContext &context, ScalarFunctio
 }
 
 template <>
+std::bfloat16_t ModuloOperator::Operation(std::bfloat16_t left, std::bfloat16_t right) {
+	auto result = std::fmod(left, right);
+	return result;
+}
+
+template <>
 float ModuloOperator::Operation(float left, float right) {
 	auto result = std::fmod(left, right);
 	return result;
@@ -1103,7 +1120,7 @@ hugeint_t ModuloOperator::Operation(hugeint_t left, hugeint_t right) {
 ScalarFunctionSet OperatorModuloFun::GetFunctions() {
 	ScalarFunctionSet modulo("%");
 	for (auto &type : LogicalType::Numeric()) {
-		if (type.id() == LogicalTypeId::FLOAT || type.id() == LogicalTypeId::DOUBLE) {
+		if (type.id() == LogicalTypeId::FLOAT || type.id() == LogicalTypeId::DOUBLE || type.id() == LogicalTypeId::HALF_FLOAT) {
 			modulo.AddFunction(ScalarFunction({type, type}, type, nullptr, BindBinaryFloatingPoint<ModuloOperator>));
 		} else if (type.id() == LogicalTypeId::DECIMAL) {
 			modulo.AddFunction(ScalarFunction({type, type}, type, nullptr, BindDecimalModulo<ModuloOperator>));

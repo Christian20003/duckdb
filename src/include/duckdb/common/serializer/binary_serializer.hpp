@@ -14,6 +14,8 @@
 #include "duckdb/common/serializer/serializer.hpp"
 #include "duckdb/common/serializer/write_stream.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 class BinarySerializer : public Serializer {
@@ -100,6 +102,7 @@ protected:
 	void WriteValue(int64_t value) final;
 	void WriteValue(hugeint_t value) final;
 	void WriteValue(uhugeint_t value) final;
+	void WriteValue(std::bfloat16_t value) final;
 	void WriteValue(float value) final;
 	void WriteValue(double value) final;
 	void WriteValue(const string_t value) final;

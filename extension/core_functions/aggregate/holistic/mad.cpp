@@ -5,6 +5,8 @@
 #include "duckdb/common/operator/abs.hpp"
 #include "core_functions/aggregate/quantile_state.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct FrameSet {
@@ -278,6 +280,8 @@ AggregateFunction GetTypedMedianAbsoluteDeviationAggregateFunction(const Logical
 
 AggregateFunction GetMedianAbsoluteDeviationAggregateFunctionInternal(const LogicalType &type) {
 	switch (type.id()) {
+	case LogicalTypeId::HALF_FLOAT:
+		return GetTypedMedianAbsoluteDeviationAggregateFunction<std::bfloat16_t, std::bfloat16_t, std::bfloat16_t>(type, type);
 	case LogicalTypeId::FLOAT:
 		return GetTypedMedianAbsoluteDeviationAggregateFunction<float, float, float>(type, type);
 	case LogicalTypeId::DOUBLE:
@@ -333,7 +337,7 @@ AggregateFunctionSet MadFun::GetFunctions() {
 	mad.AddFunction(AggregateFunction({LogicalTypeId::DECIMAL}, LogicalTypeId::DECIMAL, nullptr, nullptr, nullptr,
 	                                  nullptr, nullptr, nullptr, BindMedianAbsoluteDeviationDecimal));
 
-	const vector<LogicalType> MAD_TYPES = {LogicalType::FLOAT,     LogicalType::DOUBLE, LogicalType::DATE,
+	const vector<LogicalType> MAD_TYPES = {LogicalType::HALF_FLOAT, LogicalType::FLOAT,     LogicalType::DOUBLE, LogicalType::DATE,
 	                                       LogicalType::TIMESTAMP, LogicalType::TIME,   LogicalType::TIMESTAMP_TZ,
 	                                       LogicalType::TIME_TZ};
 	for (const auto &type : MAD_TYPES) {

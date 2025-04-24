@@ -4,6 +4,8 @@
 #include "json_common.hpp"
 #include "json_functions.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 using StructNames = unordered_map<string, unique_ptr<Vector>>;
@@ -50,6 +52,7 @@ static LogicalType GetJSONType(StructNames &const_struct_names, const LogicalTyp
 	case LogicalTypeId::USMALLINT:
 	case LogicalTypeId::UINTEGER:
 	case LogicalTypeId::UBIGINT:
+	case LogicalTypeId::HALF_FLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 	case LogicalTypeId::BIT:
@@ -540,6 +543,9 @@ static void CreateValues(const StructNames &names, yyjson_mut_doc *doc, yyjson_m
 		break;
 	case LogicalTypeId::UBIGINT:
 		TemplatedCreateValues<uint64_t, uint64_t>(doc, vals, value_v, count);
+		break;
+	case LogicalTypeId::HALF_FLOAT:
+		TemplatedCreateValues<std::bfloat16_t, double>(doc, vals, value_v, count);
 		break;
 	case LogicalTypeId::FLOAT:
 		TemplatedCreateValues<float, double>(doc, vals, value_v, count);

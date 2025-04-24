@@ -646,6 +646,14 @@ bool Hugeint::TryCast(hugeint_t input, float &result) {
 	return true;
 }
 
+template <>
+bool Hugeint::TryCast(hugeint_t input, std::bfloat16_t &result) {
+	double dbl_result;
+	Hugeint::TryCast(input, dbl_result);
+	result = static_cast<std::bfloat16_t>(dbl_result);
+	return true;
+}
+
 template <class REAL_T>
 bool CastBigintToFloating(hugeint_t input, REAL_T &result) {
 	switch (input.upper) {

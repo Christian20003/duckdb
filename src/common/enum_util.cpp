@@ -2202,6 +2202,7 @@ const StringUtil::EnumStringLiteral *GetLogicalTypeIdValues() {
 		{ static_cast<uint32_t>(LogicalTypeId::TIMESTAMP), "TIMESTAMP" },
 		{ static_cast<uint32_t>(LogicalTypeId::TIMESTAMP_NS), "TIMESTAMP_NS" },
 		{ static_cast<uint32_t>(LogicalTypeId::DECIMAL), "DECIMAL" },
+		{ static_cast<uint32_t>(LogicalTypeId::HALF_FLOAT), "HALF_FLOAT"},
 		{ static_cast<uint32_t>(LogicalTypeId::FLOAT), "FLOAT" },
 		{ static_cast<uint32_t>(LogicalTypeId::DOUBLE), "DOUBLE" },
 		{ static_cast<uint32_t>(LogicalTypeId::CHAR), "CHAR" },

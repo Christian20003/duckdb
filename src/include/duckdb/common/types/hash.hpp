@@ -11,6 +11,8 @@
 #include "duckdb/common/common.hpp"
 #include "duckdb/common/types.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct string_t;
@@ -51,6 +53,8 @@ template <>
 DUCKDB_API hash_t Hash(hugeint_t val);
 template <>
 DUCKDB_API hash_t Hash(uhugeint_t val);
+template <>
+DUCKDB_API hash_t Hash(std::bfloat16_t val);
 template <>
 DUCKDB_API hash_t Hash(float val);
 template <>

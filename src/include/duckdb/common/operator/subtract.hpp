@@ -13,6 +13,8 @@
 #include "duckdb/common/type_util.hpp"
 #include "duckdb/common/types/cast_helpers.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct interval_t;
@@ -28,6 +30,8 @@ struct SubtractOperator {
 	}
 };
 
+template <>
+std::bfloat16_t SubtractOperator::Operation(std::bfloat16_t left, std::bfloat16_t right);
 template <>
 float SubtractOperator::Operation(float left, float right);
 template <>

@@ -226,6 +226,14 @@ float JsonDeserializer::ReadFloat() {
 	return yyjson_get_real(val);
 }
 
+std::bfloat16_t JsonDeserializer::ReadHalfFloat() {
+	auto val = GetNextValue();
+	if (!yyjson_is_real(val)) {
+		ThrowTypeError(val, "bfloat");
+	}
+	return yyjson_get_real(val);
+}
+
 double JsonDeserializer::ReadDouble() {
 	auto val = GetNextValue();
 	if (!yyjson_is_real(val)) {

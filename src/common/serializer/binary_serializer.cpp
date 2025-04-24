@@ -141,6 +141,10 @@ void BinarySerializer::WriteValue(uhugeint_t value) {
 	VarIntEncode(value.lower);
 }
 
+void BinarySerializer::WriteValue(std::bfloat16_t value) {
+	Write(value);
+}
+
 void BinarySerializer::WriteValue(float value) {
 	Write(value);
 }

@@ -25,11 +25,12 @@ bool CSVSchema::CanWeCastIt(LogicalTypeId source, LogicalTypeId destination) {
 	case LogicalTypeId::TINYINT:
 		return destination == LogicalTypeId::SMALLINT || destination == LogicalTypeId::INTEGER ||
 		       destination == LogicalTypeId::BIGINT || destination == LogicalTypeId::DECIMAL ||
-		       destination == LogicalTypeId::FLOAT || destination == LogicalTypeId::DOUBLE;
+		       destination == LogicalTypeId::FLOAT || destination == LogicalTypeId::DOUBLE || 
+			   destination == LogicalTypeId::HALF_FLOAT;
 	case LogicalTypeId::SMALLINT:
 		return destination == LogicalTypeId::INTEGER || destination == LogicalTypeId::BIGINT ||
 		       destination == LogicalTypeId::DECIMAL || destination == LogicalTypeId::FLOAT ||
-		       destination == LogicalTypeId::DOUBLE;
+		       destination == LogicalTypeId::DOUBLE || destination == LogicalTypeId::HALF_FLOAT;
 	case LogicalTypeId::INTEGER:
 		return destination == LogicalTypeId::BIGINT || destination == LogicalTypeId::DECIMAL ||
 		       destination == LogicalTypeId::FLOAT || destination == LogicalTypeId::DOUBLE;
