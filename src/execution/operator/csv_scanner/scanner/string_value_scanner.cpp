@@ -12,7 +12,7 @@
 #include "utf8proc_wrapper.hpp"
 
 #include <algorithm>
-//#include <stdfloat>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -289,6 +289,7 @@ void StringValueResult::AddValueToVector(const char *value_ptr, const idx_t size
 		}
 	}
 	bool success = true;
+	float result = 0;
 	switch (parse_types[chunk_col_id].type_id) {
 	case LogicalTypeId::BOOLEAN:
 		success =
@@ -334,6 +335,8 @@ void StringValueResult::AddValueToVector(const char *value_ptr, const idx_t size
 	case LogicalTypeId::HALF_FLOAT:
 		success = TryDoubleCast<float>(value_ptr, size, static_cast<float *>(vector_ptr[chunk_col_id])[number_of_rows],
 		                               false, state_machine.options.decimal_separator[0]);
+		result = static_cast<float *>(vector_ptr[chunk_col_id])[number_of_rows];
+		static_cast<std::bfloat16_t *>(vector_ptr[chunk_col_id])[number_of_rows] = static_cast<std::bfloat16_t>(result);
 		break;
 	case LogicalTypeId::FLOAT:
 		success = TryDoubleCast<float>(value_ptr, size, static_cast<float *>(vector_ptr[chunk_col_id])[number_of_rows],
