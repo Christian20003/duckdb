@@ -4,6 +4,8 @@
 #include "duckdb/common/value_operations/value_operations.hpp"
 #include "duckdb/planner/expression/bound_comparison_expression.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //===--------------------------------------------------------------------===//
@@ -133,6 +135,8 @@ static bool TemplatedBooleanOperation(const Value &left, const Value &right) {
 		return OP::Operation(left.GetValueUnsafe<uhugeint_t>(), right.GetValueUnsafe<uhugeint_t>());
 	case PhysicalType::INT128:
 		return OP::Operation(left.GetValueUnsafe<hugeint_t>(), right.GetValueUnsafe<hugeint_t>());
+	case PhysicalType::HALF_FLOAT:
+		return OP::Operation(left.GetValueUnsafe<std::bfloat16_t>(), right.GetValueUnsafe<std::bfloat16_t>());
 	case PhysicalType::FLOAT:
 		return OP::Operation(left.GetValueUnsafe<float>(), right.GetValueUnsafe<float>());
 	case PhysicalType::DOUBLE:

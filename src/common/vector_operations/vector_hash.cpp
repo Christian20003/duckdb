@@ -9,6 +9,8 @@
 #include "duckdb/common/value_operations/value_operations.hpp"
 #include "duckdb/common/vector_operations/vector_operations.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct HashOp {
@@ -289,6 +291,9 @@ static inline void HashTypeSwitch(Vector &input, Vector &result, const Selection
 	case PhysicalType::UINT128:
 		TemplatedLoopHash<HAS_RSEL, uhugeint_t>(input, result, rsel, count);
 		break;
+	case PhysicalType::HALF_FLOAT:
+		TemplatedLoopHash<HAS_RSEL, std::bfloat16_t>(input, result, rsel, count);
+		break;
 	case PhysicalType::FLOAT:
 		TemplatedLoopHash<HAS_RSEL, float>(input, result, rsel, count);
 		break;
@@ -427,6 +432,9 @@ static inline void CombineHashTypeSwitch(Vector &hashes, Vector &input, const Se
 		break;
 	case PhysicalType::UINT128:
 		TemplatedLoopCombineHash<HAS_RSEL, uhugeint_t>(input, hashes, rsel, count);
+		break;
+	case PhysicalType::HALF_FLOAT:
+		TemplatedLoopCombineHash<HAS_RSEL, std::bfloat16_t>(input, hashes, rsel, count);
 		break;
 	case PhysicalType::FLOAT:
 		TemplatedLoopCombineHash<HAS_RSEL, float>(input, hashes, rsel, count);

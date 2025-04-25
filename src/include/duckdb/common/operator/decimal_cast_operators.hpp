@@ -12,6 +12,8 @@
 #include "duckdb/common/types/decimal.hpp"
 #include "duckdb/common/operator/integer_cast_operator.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //===--------------------------------------------------------------------===//
@@ -355,6 +357,35 @@ bool TryCastFromDecimal::Operation(int64_t input, uint64_t &result, CastParamete
                                    uint8_t scale);
 template <>
 bool TryCastFromDecimal::Operation(hugeint_t input, uint64_t &result, CastParameters &parameters, uint8_t width,
+                                   uint8_t scale);
+
+//===--------------------------------------------------------------------===//
+// Cast Decimal <-> bfloat
+//===--------------------------------------------------------------------===//
+template <>
+DUCKDB_API bool TryCastToDecimal::Operation(std::bfloat16_t input, int16_t &result, CastParameters &parameters, uint8_t width,
+                                            uint8_t scale);
+template <>
+DUCKDB_API bool TryCastToDecimal::Operation(std::bfloat16_t input, int32_t &result, CastParameters &parameters, uint8_t width,
+                                            uint8_t scale);
+template <>
+DUCKDB_API bool TryCastToDecimal::Operation(std::bfloat16_t input, int64_t &result, CastParameters &parameters, uint8_t width,
+                                            uint8_t scale);
+template <>
+DUCKDB_API bool TryCastToDecimal::Operation(std::bfloat16_t input, hugeint_t &result, CastParameters &parameters, uint8_t width,
+                                            uint8_t scale);
+
+template <>
+bool TryCastFromDecimal::Operation(int16_t input, std::bfloat16_t &result, CastParameters &parameters, uint8_t width,
+                                   uint8_t scale);
+template <>
+bool TryCastFromDecimal::Operation(int32_t input, std::bfloat16_t &result, CastParameters &parameters, uint8_t width,
+                                   uint8_t scale);
+template <>
+bool TryCastFromDecimal::Operation(int64_t input, std::bfloat16_t &result, CastParameters &parameters, uint8_t width,
+                                   uint8_t scale);
+template <>
+bool TryCastFromDecimal::Operation(hugeint_t input, std::bfloat16_t &result, CastParameters &parameters, uint8_t width,
                                    uint8_t scale);
 
 //===--------------------------------------------------------------------===//
