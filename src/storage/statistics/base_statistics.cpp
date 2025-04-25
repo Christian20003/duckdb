@@ -74,6 +74,7 @@ StatisticsType BaseStatistics::GetStatsType(const LogicalType &type) {
 	case PhysicalType::UINT64:
 	case PhysicalType::INT128:
 	case PhysicalType::UINT128:
+	case PhysicalType::HALF_FLOAT:
 	case PhysicalType::FLOAT:
 	case PhysicalType::DOUBLE:
 		return StatisticsType::NUMERIC_STATS;

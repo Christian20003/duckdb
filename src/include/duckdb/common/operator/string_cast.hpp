@@ -13,6 +13,8 @@
 #include "duckdb/common/exception.hpp"
 #include "duckdb/common/types/string_type.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //! StringCast
@@ -47,6 +49,8 @@ template <>
 DUCKDB_API duckdb::string_t StringCast::Operation(hugeint_t input, Vector &result);
 template <>
 DUCKDB_API duckdb::string_t StringCast::Operation(uhugeint_t input, Vector &result);
+template <>
+DUCKDB_API duckdb::string_t StringCast::Operation(std::bfloat16_t input, Vector &result);
 template <>
 DUCKDB_API duckdb::string_t StringCast::Operation(float input, Vector &result);
 template <>

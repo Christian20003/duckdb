@@ -2944,6 +2944,7 @@ const StringUtil::EnumStringLiteral *GetPhysicalTypeValues() {
 		{ static_cast<uint32_t>(PhysicalType::INT32), "INT32" },
 		{ static_cast<uint32_t>(PhysicalType::UINT64), "UINT64" },
 		{ static_cast<uint32_t>(PhysicalType::INT64), "INT64" },
+		{ static_cast<uint32_t>(PhysicalType::HALF_FLOAT), "HALF_FLOAT" },
 		{ static_cast<uint32_t>(PhysicalType::FLOAT), "FLOAT" },
 		{ static_cast<uint32_t>(PhysicalType::DOUBLE), "DOUBLE" },
 		{ static_cast<uint32_t>(PhysicalType::INTERVAL), "INTERVAL" },

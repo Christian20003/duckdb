@@ -6,6 +6,8 @@
 #include "duckdb/common/types/vector.hpp"
 #include "duckdb/storage/statistics/base_statistics.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 BaseStatistics NumericStats::CreateUnknown(LogicalType type) {
@@ -110,6 +112,11 @@ uint32_t GetNumericValueUnion::Operation(const NumericValueUnion &v) {
 template <>
 uint64_t GetNumericValueUnion::Operation(const NumericValueUnion &v) {
 	return v.value_.ubigint;
+}
+
+template <>
+std::bfloat16_t GetNumericValueUnion::Operation(const NumericValueUnion &v) {
+	return v.value_.halffloat;
 }
 
 template <>
@@ -258,6 +265,8 @@ FilterPropagateResult NumericStats::CheckZonemap(const BaseStatistics &stats, Ex
 		return CheckZonemapTemplated<hugeint_t>(stats, comparison_type, constants);
 	case PhysicalType::UINT128:
 		return CheckZonemapTemplated<uhugeint_t>(stats, comparison_type, constants);
+	case PhysicalType::HALF_FLOAT:
+		return CheckZonemapTemplated<std::bfloat16_t>(stats, comparison_type, constants);
 	case PhysicalType::FLOAT:
 		return CheckZonemapTemplated<float>(stats, comparison_type, constants);
 	case PhysicalType::DOUBLE:
@@ -314,6 +323,9 @@ void SetNumericValueInternal(const Value &input, const LogicalType &type, Numeri
 	case PhysicalType::UINT128:
 		val.value_.uhugeint = UhugeIntValue::Get(input);
 		break;
+	case PhysicalType::HALF_FLOAT:
+		val.value_.halffloat = HalfFloatValue::Get(input);
+		break;
 	case PhysicalType::FLOAT:
 		val.value_.float_ = FloatValue::Get(input);
 		break;
@@ -359,6 +371,8 @@ Value NumericValueUnionToValueInternal(const LogicalType &type, const NumericVal
 		return Value::HUGEINT(val.value_.hugeint);
 	case PhysicalType::UINT128:
 		return Value::UHUGEINT(val.value_.uhugeint);
+	case PhysicalType::HALF_FLOAT:
+		return Value::HALF_FLOAT(val.value_.halffloat);
 	case PhysicalType::FLOAT:
 		return Value::FLOAT(val.value_.float_);
 	case PhysicalType::DOUBLE:
@@ -460,6 +474,9 @@ static void SerializeNumericStatsValue(const LogicalType &type, NumericValueUnio
 	case PhysicalType::UINT128:
 		serializer.WriteProperty(101, "value", val.value_.uhugeint);
 		break;
+	case PhysicalType::HALF_FLOAT:
+		serializer.WriteProperty(101, "value", val.value_.halffloat);
+		break;
 	case PhysicalType::FLOAT:
 		serializer.WriteProperty(101, "value", val.value_.float_);
 		break;
@@ -512,6 +529,9 @@ static void DeserializeNumericStatsValue(const LogicalType &type, NumericValueUn
 		break;
 	case PhysicalType::UINT128:
 		result.value_.uhugeint = deserializer.ReadProperty<uhugeint_t>(101, "value");
+		break;
+	case PhysicalType::HALF_FLOAT:
+		result.value_.halffloat = deserializer.ReadProperty<std::bfloat16_t>(101, "value");
 		break;
 	case PhysicalType::FLOAT:
 		result.value_.float_ = deserializer.ReadProperty<float>(101, "value");
@@ -610,6 +630,9 @@ void NumericStats::Verify(const BaseStatistics &stats, Vector &vector, const Sel
 		break;
 	case PhysicalType::UINT128:
 		TemplatedVerify<uhugeint_t>(stats, vector, sel, count);
+		break;
+	case PhysicalType::HALF_FLOAT:
+		TemplatedVerify<std::bfloat16_t>(stats, vector, sel, count);
 		break;
 	case PhysicalType::FLOAT:
 		TemplatedVerify<float>(stats, vector, sel, count);

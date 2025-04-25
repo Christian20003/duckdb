@@ -92,6 +92,11 @@ bool TryCast::Operation(bool input, uint64_t &result, bool strict) {
 }
 
 template <>
+bool TryCast::Operation(bool input, std::bfloat16_t &result, bool strict) {
+	return NumericTryCast::Operation<bool, std::bfloat16_t>(input, result, strict);
+}
+
+template <>
 bool TryCast::Operation(bool input, float &result, bool strict) {
 	return NumericTryCast::Operation<bool, float>(input, result, strict);
 }
@@ -157,6 +162,11 @@ bool TryCast::Operation(int8_t input, uint32_t &result, bool strict) {
 template <>
 bool TryCast::Operation(int8_t input, uint64_t &result, bool strict) {
 	return NumericTryCast::Operation<int8_t, uint64_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(int8_t input, std::bfloat16_t &result, bool strict) {
+	return NumericTryCast::Operation<int8_t, std::bfloat16_t>(input, result, strict);
 }
 
 template <>
@@ -228,6 +238,11 @@ bool TryCast::Operation(int16_t input, uint64_t &result, bool strict) {
 }
 
 template <>
+bool TryCast::Operation(int16_t input, std::bfloat16_t&result, bool strict) {
+	return NumericTryCast::Operation<int16_t, std::bfloat16_t>(input, result, strict);
+}
+
+template <>
 bool TryCast::Operation(int16_t input, float &result, bool strict) {
 	return NumericTryCast::Operation<int16_t, float>(input, result, strict);
 }
@@ -293,6 +308,11 @@ bool TryCast::Operation(int32_t input, uint32_t &result, bool strict) {
 template <>
 bool TryCast::Operation(int32_t input, uint64_t &result, bool strict) {
 	return NumericTryCast::Operation<int32_t, uint64_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(int32_t input, std::bfloat16_t&result, bool strict) {
+	return NumericTryCast::Operation<int32_t, std::bfloat16_t>(input, result, strict);
 }
 
 template <>
@@ -364,6 +384,11 @@ bool TryCast::Operation(int64_t input, uint64_t &result, bool strict) {
 }
 
 template <>
+bool TryCast::Operation(int64_t input, std::bfloat16_t&result, bool strict) {
+	return NumericTryCast::Operation<int64_t, std::bfloat16_t>(input, result, strict);
+}
+
+template <>
 bool TryCast::Operation(int64_t input, float &result, bool strict) {
 	return NumericTryCast::Operation<int64_t, float>(input, result, strict);
 }
@@ -429,6 +454,11 @@ bool TryCast::Operation(hugeint_t input, uint32_t &result, bool strict) {
 template <>
 bool TryCast::Operation(hugeint_t input, uint64_t &result, bool strict) {
 	return NumericTryCast::Operation<hugeint_t, uint64_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(hugeint_t input, std::bfloat16_t&result, bool strict) {
+	return NumericTryCast::Operation<hugeint_t, std::bfloat16_t>(input, result, strict);
 }
 
 template <>
@@ -500,6 +530,11 @@ bool TryCast::Operation(uhugeint_t input, uint64_t &result, bool strict) {
 }
 
 template <>
+bool TryCast::Operation(uhugeint_t input, std::bfloat16_t&result, bool strict) {
+	return NumericTryCast::Operation<uhugeint_t, std::bfloat16_t>(input, result, strict);
+}
+
+template <>
 bool TryCast::Operation(uhugeint_t input, float &result, bool strict) {
 	return NumericTryCast::Operation<uhugeint_t, float>(input, result, strict);
 }
@@ -565,6 +600,11 @@ bool TryCast::Operation(uint8_t input, uint32_t &result, bool strict) {
 template <>
 bool TryCast::Operation(uint8_t input, uint64_t &result, bool strict) {
 	return NumericTryCast::Operation<uint8_t, uint64_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(uint8_t input, std::bfloat16_t &result, bool strict) {
+	return NumericTryCast::Operation<uint8_t, std::bfloat16_t>(input, result, strict);
 }
 
 template <>
@@ -636,6 +676,11 @@ bool TryCast::Operation(uint16_t input, uint64_t &result, bool strict) {
 }
 
 template <>
+bool TryCast::Operation(uint16_t input, std::bfloat16_t &result, bool strict) {
+	return NumericTryCast::Operation<uint16_t, std::bfloat16_t>(input, result, strict);
+}
+
+template <>
 bool TryCast::Operation(uint16_t input, float &result, bool strict) {
 	return NumericTryCast::Operation<uint16_t, float>(input, result, strict);
 }
@@ -701,6 +746,11 @@ bool TryCast::Operation(uint32_t input, uint32_t &result, bool strict) {
 template <>
 bool TryCast::Operation(uint32_t input, uint64_t &result, bool strict) {
 	return NumericTryCast::Operation<uint32_t, uint64_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(uint32_t input, std::bfloat16_t&result, bool strict) {
+	return NumericTryCast::Operation<uint32_t, std::bfloat16_t>(input, result, strict);
 }
 
 template <>
@@ -772,6 +822,11 @@ bool TryCast::Operation(uint64_t input, uint64_t &result, bool strict) {
 }
 
 template <>
+bool TryCast::Operation(uint64_t input, std::bfloat16_t &result, bool strict) {
+	return NumericTryCast::Operation<uint64_t, std::bfloat16_t>(input, result, strict);
+}
+
+template <>
 bool TryCast::Operation(uint64_t input, float &result, bool strict) {
 	return NumericTryCast::Operation<uint64_t, float>(input, result, strict);
 }
@@ -779,6 +834,79 @@ bool TryCast::Operation(uint64_t input, float &result, bool strict) {
 template <>
 bool TryCast::Operation(uint64_t input, double &result, bool strict) {
 	return NumericTryCast::Operation<uint64_t, double>(input, result, strict);
+}
+
+//===--------------------------------------------------------------------===//
+// Cast bfloat -> Numeric
+//===--------------------------------------------------------------------===//
+template <>
+bool TryCast::Operation(std::bfloat16_t input, bool &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, bool>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, int8_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, int8_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, int16_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, int16_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, int32_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, int32_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, int64_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, int64_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, hugeint_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, hugeint_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, uhugeint_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, uhugeint_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, uint8_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, uint8_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, uint16_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, uint16_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, uint32_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, uint32_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, uint64_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, uint64_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, std::bfloat16_t &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, std::bfloat16_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, float &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, float>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(std::bfloat16_t input, double &result, bool strict) {
+	return NumericTryCast::Operation<std::bfloat16_t, double>(input, result, strict);
 }
 
 //===--------------------------------------------------------------------===//
@@ -837,6 +965,11 @@ bool TryCast::Operation(float input, uint32_t &result, bool strict) {
 template <>
 bool TryCast::Operation(float input, uint64_t &result, bool strict) {
 	return NumericTryCast::Operation<float, uint64_t>(input, result, strict);
+}
+
+template <>
+bool TryCast::Operation(float input, std::bfloat16_t &result, bool strict) {
+	return NumericTryCast::Operation<float, std::bfloat16_t>(input, result, strict);
 }
 
 template <>
@@ -908,6 +1041,11 @@ bool TryCast::Operation(double input, uint64_t &result, bool strict) {
 }
 
 template <>
+bool TryCast::Operation(double input, std::bfloat16_t&result, bool strict) {
+	return NumericTryCast::Operation<double, std::bfloat16_t>(input, result, strict);
+}
+
+template <>
 bool TryCast::Operation(double input, float &result, bool strict) {
 	return NumericTryCast::Operation<double, float>(input, result, strict);
 }
@@ -962,6 +1100,14 @@ bool TryCast::Operation(string_t input, uint64_t &result, bool strict) {
 }
 
 template <>
+bool TryCast::Operation(string_t input, std::bfloat16_t &result, bool strict) {
+	float res = 0;
+	bool ret = TryDoubleCast<float>(input.GetData(), input.GetSize(), res, strict);
+	result = static_cast<std::bfloat16_t>(res);
+	return ret;
+}
+
+template <>
 bool TryCast::Operation(string_t input, float &result, bool strict) {
 	return TryDoubleCast<float>(input.GetData(), input.GetSize(), result, strict);
 }
@@ -969,6 +1115,18 @@ bool TryCast::Operation(string_t input, float &result, bool strict) {
 template <>
 bool TryCast::Operation(string_t input, double &result, bool strict) {
 	return TryDoubleCast<double>(input.GetData(), input.GetSize(), result, strict);
+}
+
+template <>
+bool TryCastErrorMessageCommaSeparated::Operation(string_t input, std::bfloat16_t&result, CastParameters &parameters) {
+	float res = 0;
+	if (!TryDoubleCast<float>(input.GetData(), input.GetSize(), res, parameters.strict, ',')) {
+		HandleCastError::AssignError(StringUtil::Format("Could not cast string to float: \"%s\"", input.GetString()),
+		parameters);
+		return false;
+	}
+	result = static_cast<std::bfloat16_t>(res);
+	return true;
 }
 
 template <>
@@ -2320,6 +2478,30 @@ bool DoubleToDecimalCast(SRC input, DST &result, CastParameters &parameters, uin
 }
 
 template <>
+bool TryCastToDecimal::Operation(std::bfloat16_t input, int16_t &result, CastParameters &parameters, uint8_t width,
+                                 uint8_t scale) {
+	return DoubleToDecimalCast<std::bfloat16_t, int16_t>(input, result, parameters, width, scale);
+}
+
+template <>
+bool TryCastToDecimal::Operation(std::bfloat16_t input, int32_t &result, CastParameters &parameters, uint8_t width,
+                                 uint8_t scale) {
+	return DoubleToDecimalCast<std::bfloat16_t, int32_t>(input, result, parameters, width, scale);
+}
+
+template <>
+bool TryCastToDecimal::Operation(std::bfloat16_t input, int64_t &result, CastParameters &parameters, uint8_t width,
+                                 uint8_t scale) {
+	return DoubleToDecimalCast<std::bfloat16_t, int64_t>(input, result, parameters, width, scale);
+}
+
+template <>
+bool TryCastToDecimal::Operation(std::bfloat16_t input, hugeint_t &result, CastParameters &parameters, uint8_t width,
+                                 uint8_t scale) {
+	return DoubleToDecimalCast<std::bfloat16_t, hugeint_t>(input, result, parameters, width, scale);
+}
+
+template <>
 bool TryCastToDecimal::Operation(float input, int16_t &result, CastParameters &parameters, uint8_t width,
                                  uint8_t scale) {
 	return DoubleToDecimalCast<float, int16_t>(input, result, parameters, width, scale);
@@ -2651,8 +2833,28 @@ bool IsRepresentableExactly(int16_t input, float dst) {
 	return true;
 }
 
+const int64_t MAX_INT_REPRESENTABLE_IN_HALF_FLOAT = 0x000000100LL;
 const int64_t MAX_INT_REPRESENTABLE_IN_FLOAT = 0x001000000LL;
 const int64_t MAX_INT_REPRESENTABLE_IN_DOUBLE = 0x0020000000000000LL;
+
+template <>
+bool IsRepresentableExactly(int16_t input, std::bfloat16_t dst) {
+	return (input <= MAX_INT_REPRESENTABLE_IN_HALF_FLOAT && input >= -MAX_INT_REPRESENTABLE_IN_HALF_FLOAT);
+}
+template <>
+bool IsRepresentableExactly(int32_t input, std::bfloat16_t dst) {
+	return (input <= MAX_INT_REPRESENTABLE_IN_HALF_FLOAT && input >= -MAX_INT_REPRESENTABLE_IN_HALF_FLOAT);
+}
+
+template <>
+bool IsRepresentableExactly(int64_t input, std::bfloat16_t dst) {
+	return (input <= MAX_INT_REPRESENTABLE_IN_HALF_FLOAT && input >= -MAX_INT_REPRESENTABLE_IN_HALF_FLOAT);
+}
+
+template <>
+bool IsRepresentableExactly(hugeint_t input, std::bfloat16_t dst) {
+	return (input <= MAX_INT_REPRESENTABLE_IN_HALF_FLOAT && input >= -MAX_INT_REPRESENTABLE_IN_HALF_FLOAT);
+}
 
 template <>
 bool IsRepresentableExactly(int32_t input, float dst) {
@@ -2726,6 +2928,31 @@ bool TryCastDecimalToFloatingPoint(SRC input, DST &result, uint8_t scale) {
 	result = Cast::Operation<SRC, DST>(div) +
 	         Cast::Operation<SRC, DST>(mod) / DST(NumericHelper::DOUBLE_POWERS_OF_TEN[scale]);
 	return true;
+}
+
+// DECIMAL -> BFLOAT
+template <>
+bool TryCastFromDecimal::Operation(int16_t input, std::bfloat16_t &result, CastParameters &parameters, uint8_t width,
+                                   uint8_t scale) {
+	return TryCastDecimalToFloatingPoint<int16_t, std::bfloat16_t>(input, result, scale);
+}
+
+template <>
+bool TryCastFromDecimal::Operation(int32_t input, std::bfloat16_t &result, CastParameters &parameters, uint8_t width,
+                                   uint8_t scale) {
+	return TryCastDecimalToFloatingPoint<int32_t, std::bfloat16_t>(input, result, scale);
+}
+
+template <>
+bool TryCastFromDecimal::Operation(int64_t input, std::bfloat16_t &result, CastParameters &parameters, uint8_t width,
+                                   uint8_t scale) {
+	return TryCastDecimalToFloatingPoint<int64_t, std::bfloat16_t>(input, result, scale);
+}
+
+template <>
+bool TryCastFromDecimal::Operation(hugeint_t input, std::bfloat16_t &result, CastParameters &parameters, uint8_t width,
+                                   uint8_t scale) {
+	return TryCastDecimalToFloatingPoint<hugeint_t, std::bfloat16_t>(input, result, scale);
 }
 
 // DECIMAL -> FLOAT

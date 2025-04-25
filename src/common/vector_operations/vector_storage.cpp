@@ -3,6 +3,8 @@
 #include "duckdb/common/uhugeint.hpp"
 #include "duckdb/common/vector_operations/vector_operations.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 template <class T>
@@ -57,6 +59,9 @@ void VectorOperations::WriteToStorage(Vector &source, idx_t count, data_ptr_t ta
 		break;
 	case PhysicalType::UINT128:
 		CopyToStorageLoop<uhugeint_t>(vdata, count, target);
+		break;
+	case PhysicalType::HALF_FLOAT:
+		CopyToStorageLoop<std::bfloat16_t>(vdata, count, target);
 		break;
 	case PhysicalType::FLOAT:
 		CopyToStorageLoop<float>(vdata, count, target);
@@ -114,6 +119,9 @@ void VectorOperations::ReadFromStorage(data_ptr_t source, idx_t count, Vector &r
 		break;
 	case PhysicalType::UINT128:
 		ReadFromStorageLoop<uhugeint_t>(source, count, result);
+		break;
+	case PhysicalType::HALF_FLOAT:
+		ReadFromStorageLoop<std::bfloat16_t>(source, count, result);
 		break;
 	case PhysicalType::FLOAT:
 		ReadFromStorageLoop<float>(source, count, result);

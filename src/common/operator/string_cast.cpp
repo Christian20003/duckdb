@@ -62,6 +62,13 @@ duckdb::string_t StringCast::Operation(hugeint_t input, Vector &vector) {
 }
 
 template <>
+string_t StringCast::Operation(std::bfloat16_t input, Vector &vector) {
+	float value = static_cast<float>(input);
+	std::string s = duckdb_fmt::format("{}", value);
+	return StringVector::AddString(vector, s);
+}
+
+template <>
 string_t StringCast::Operation(float input, Vector &vector) {
 	std::string s = duckdb_fmt::format("{}", input);
 	return StringVector::AddString(vector, s);

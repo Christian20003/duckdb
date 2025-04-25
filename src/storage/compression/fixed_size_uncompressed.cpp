@@ -9,6 +9,8 @@
 #include "duckdb/storage/table/column_segment.hpp"
 #include "duckdb/storage/table/scan_state.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //===--------------------------------------------------------------------===//
@@ -297,6 +299,8 @@ CompressionFunction FixedSizeUncompressed::GetFunction(PhysicalType data_type) {
 		return FixedSizeGetFunction<hugeint_t>(data_type);
 	case PhysicalType::UINT128:
 		return FixedSizeGetFunction<uhugeint_t>(data_type);
+	case PhysicalType::HALF_FLOAT:
+		return FixedSizeGetFunction<std::bfloat16_t>(data_type);
 	case PhysicalType::FLOAT:
 		return FixedSizeGetFunction<float>(data_type);
 	case PhysicalType::DOUBLE:

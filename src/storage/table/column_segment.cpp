@@ -15,6 +15,7 @@
 #include "duckdb/storage/table/update_segment.hpp"
 
 #include <cstring>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -508,6 +509,11 @@ idx_t ColumnSegment::FilterSelection(SelectionVector &sel, Vector &vector, Unifi
 			auto predicate = UhugeIntValue::Get(constant_filter.constant);
 			FilterSelectionSwitch<uhugeint_t>(vdata, predicate, sel, approved_tuple_count,
 			                                  constant_filter.comparison_type);
+			break;
+		}
+		case PhysicalType::HALF_FLOAT: {
+			auto predicate = HalfFloatValue::Get(constant_filter.constant);
+			FilterSelectionSwitch<std::bfloat16_t>(vdata, predicate, sel, approved_tuple_count, constant_filter.comparison_type);
 			break;
 		}
 		case PhysicalType::FLOAT: {

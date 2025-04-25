@@ -12,6 +12,8 @@
 #include "duckdb/common/exception.hpp"
 #include "duckdb/common/types/hugeint.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct NumericValueUnion {
@@ -27,6 +29,7 @@ struct NumericValueUnion {
 		uint64_t ubigint;
 		hugeint_t hugeint;
 		uhugeint_t uhugeint;
+		std::bfloat16_t halffloat;
 		float float_;   // NOLINT
 		double double_; // NOLINT
 	} value_;           // NOLINT
@@ -88,6 +91,11 @@ DUCKDB_API inline uint32_t &NumericValueUnion::GetReferenceUnsafe() {
 template <>
 DUCKDB_API inline uint64_t &NumericValueUnion::GetReferenceUnsafe() {
 	return value_.ubigint;
+}
+
+template <>
+DUCKDB_API inline std::bfloat16_t &NumericValueUnion::GetReferenceUnsafe() {
+	return value_.halffloat;
 }
 
 template <>
