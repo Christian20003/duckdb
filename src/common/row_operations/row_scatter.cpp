@@ -14,6 +14,8 @@
 #include "duckdb/common/types/vector.hpp"
 #include "duckdb/common/uhugeint.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 using ValidityBytes = RowLayout::ValidityBytes;
@@ -209,6 +211,9 @@ void RowOperations::Scatter(DataChunk &columns, UnifiedVectorFormat col_data[], 
 			break;
 		case PhysicalType::UINT128:
 			TemplatedScatter<uhugeint_t>(col, rows, sel, count, col_offset, col_no, column_count);
+			break;
+		case PhysicalType::HALF_FLOAT:
+			TemplatedScatter<std::bfloat16_t>(col, rows, sel, count, col_offset, col_no, column_count);
 			break;
 		case PhysicalType::FLOAT:
 			TemplatedScatter<float>(col, rows, sel, count, col_offset, col_no, column_count);

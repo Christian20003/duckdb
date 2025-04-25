@@ -125,6 +125,8 @@ static idx_t TemplatedSelectOperation(Vector &left, Vector &right, optional_ptr<
 	case PhysicalType::UINT128:
 		return BinaryExecutor::Select<uhugeint_t, uhugeint_t, OP>(left, right, sel.get(), count, true_sel.get(),
 		                                                          false_sel.get());
+	case PhysicalType::HALF_FLOAT:
+		return BinaryExecutor::Select<std::bfloat16_t, std::bfloat16_t, OP>(left, right, sel.get(), count, true_sel.get(), false_sel.get());
 	case PhysicalType::FLOAT:
 		return BinaryExecutor::Select<float, float, OP>(left, right, sel.get(), count, true_sel.get(), false_sel.get());
 	case PhysicalType::DOUBLE:
