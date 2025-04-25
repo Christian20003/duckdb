@@ -2,6 +2,8 @@
 #include "core_functions/array_kernels.hpp"
 #include "duckdb/planner/expression/bound_function_expression.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //------------------------------------------------------------------------------
@@ -75,6 +77,8 @@ static void AddListFoldFunction(ScalarFunctionSet &set, const LogicalType &type)
 	const auto list = LogicalType::LIST(type);
 	if (type.id() == LogicalTypeId::FLOAT) {
 		set.AddFunction(ScalarFunction({list, list}, type, ListGenericFold<float, OP>));
+	} else if (type.id() == LogicalTypeId::HALF_FLOAT) {
+		set.AddFunction(ScalarFunction({list, list}, type, ListGenericFold<std::bfloat16_t, OP>));
 	} else if (type.id() == LogicalTypeId::DOUBLE) {
 		set.AddFunction(ScalarFunction({list, list}, type, ListGenericFold<double, OP>));
 	} else {

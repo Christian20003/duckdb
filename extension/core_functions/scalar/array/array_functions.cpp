@@ -2,6 +2,8 @@
 #include "core_functions/array_kernels.hpp"
 #include "duckdb/planner/expression/bound_function_expression.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 static unique_ptr<FunctionData> ArrayGenericBinaryBind(ClientContext &context, ScalarFunction &bound_function,
@@ -211,6 +213,10 @@ static void AddArrayFoldFunction(ScalarFunctionSet &set, const LogicalType &type
 	const auto array = LogicalType::ARRAY(type, optional_idx());
 	if (type.id() == LogicalTypeId::FLOAT) {
 		ScalarFunction function({array, array}, type, ArrayGenericFold<float, OP>, ArrayGenericBinaryBind);
+		BaseScalarFunction::SetReturnsError(function);
+		set.AddFunction(function);
+	} else if (type.id() == LogicalTypeId::HALF_FLOAT) {
+		ScalarFunction function({array, array}, type, ArrayGenericFold<std::bfloat16_t, OP>, ArrayGenericBinaryBind);
 		BaseScalarFunction::SetReturnsError(function);
 		set.AddFunction(function);
 	} else if (type.id() == LogicalTypeId::DOUBLE) {

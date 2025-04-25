@@ -10,6 +10,8 @@
 #include "duckdb/common/vector_operations/vector_operations.hpp"
 #include "duckdb/storage/buffer_manager.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct ColumnDataMetaData;
@@ -745,6 +747,9 @@ ColumnDataCopyFunction ColumnDataCollection::GetCopyFunction(const LogicalType &
 		break;
 	case PhysicalType::UINT128:
 		function = ColumnDataCopy<uhugeint_t>;
+		break;
+	case PhysicalType::HALF_FLOAT:
+		function = ColumnDataCopy<std::bfloat16_t>;
 		break;
 	case PhysicalType::FLOAT:
 		function = ColumnDataCopy<float>;
