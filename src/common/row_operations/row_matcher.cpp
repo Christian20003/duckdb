@@ -4,6 +4,8 @@
 #include "duckdb/common/exception.hpp"
 #include "duckdb/common/types/row/tuple_data_collection.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 using ValidityBytes = TupleDataLayout::ValidityBytes;
@@ -294,6 +296,8 @@ MatchFunction RowMatcher::GetMatchFunction(const LogicalType &type, const Expres
 		return GetMatchFunction<NO_MATCH_SEL, uint64_t>(predicate);
 	case PhysicalType::UINT128:
 		return GetMatchFunction<NO_MATCH_SEL, uhugeint_t>(predicate);
+	case PhysicalType::HALF_FLOAT:
+		return GetMatchFunction<NO_MATCH_SEL, std::bfloat16_t>(predicate);
 	case PhysicalType::FLOAT:
 		return GetMatchFunction<NO_MATCH_SEL, float>(predicate);
 	case PhysicalType::DOUBLE:

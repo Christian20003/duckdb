@@ -5,6 +5,8 @@
 #include "duckdb/common/types/row/tuple_data_collection.hpp"
 #include "duckdb/common/uhugeint.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 using ValidityBytes = TupleDataLayout::ValidityBytes;
@@ -1037,6 +1039,9 @@ TupleDataScatterFunction TupleDataCollection::GetScatterFunction(const LogicalTy
 	case PhysicalType::UINT128:
 		result.function = TupleDataGetScatterFunction<uhugeint_t>(within_collection);
 		break;
+	case PhysicalType::HALF_FLOAT:
+		result.function = TupleDataGetScatterFunction<std::bfloat16_t>(within_collection);
+		break;
 	case PhysicalType::FLOAT:
 		result.function = TupleDataGetScatterFunction<float>(within_collection);
 		break;
@@ -1518,6 +1523,9 @@ static TupleDataGatherFunction TupleDataGetGatherFunctionInternal(const LogicalT
 		break;
 	case PhysicalType::UINT128:
 		result.function = TupleDataGetGatherFunction<uhugeint_t>(within_collection);
+		break;
+	case PhysicalType::HALF_FLOAT:
+		result.function = TupleDataGetGatherFunction<std::bfloat16_t>(within_collection);
 		break;
 	case PhysicalType::FLOAT:
 		result.function = TupleDataGetGatherFunction<float>(within_collection);
