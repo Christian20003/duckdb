@@ -11,6 +11,8 @@
 #include "duckdb/common/types/row/tuple_data_layout.hpp"
 #include "duckdb/common/uhugeint.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 using ValidityBytes = RowLayout::ValidityBytes;
@@ -155,6 +157,9 @@ void RowOperations::Gather(Vector &rows, const SelectionVector &row_sel, Vector 
 		break;
 	case PhysicalType::INT128:
 		TemplatedGatherLoop<hugeint_t>(rows, row_sel, col, col_sel, count, layout, col_no, build_size);
+		break;
+	case PhysicalType::HALF_FLOAT:
+		TemplatedGatherLoop<std::bfloat16_t>(rows, row_sel, col, col_sel, count, layout, col_no, build_size);
 		break;
 	case PhysicalType::FLOAT:
 		TemplatedGatherLoop<float>(rows, row_sel, col, col_sel, count, layout, col_no, build_size);

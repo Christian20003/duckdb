@@ -12,6 +12,8 @@
 
 #include "duckdb/common/likely.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 template <class T>
@@ -20,6 +22,11 @@ bool EqualsFloat(T left, T right) {
 		return true;
 	}
 	return left == right;
+}
+
+template <>
+bool Equals::Operation(const std::bfloat16_t &left, const std::bfloat16_t &right) {
+	return EqualsFloat<std::bfloat16_t>(left, right);
 }
 
 template <>
@@ -50,6 +57,11 @@ bool GreaterThanFloat(T left, T right) {
 }
 
 template <>
+bool GreaterThan::Operation(const std::bfloat16_t &left, const std::bfloat16_t &right) {
+	return GreaterThanFloat<std::bfloat16_t>(left, right);
+}
+
+template <>
 bool GreaterThan::Operation(const float &left, const float &right) {
 	return GreaterThanFloat<float>(left, right);
 }
@@ -75,6 +87,11 @@ bool GreaterThanEqualsFloat(T left, T right) {
 		return true;
 	}
 	return left >= right;
+}
+
+template <>
+bool GreaterThanEquals::Operation(const std::bfloat16_t &left, const std::bfloat16_t&right) {
+	return GreaterThanEqualsFloat<std::bfloat16_t>(left, right);
 }
 
 template <>
@@ -257,6 +274,9 @@ public:
 			break;
 		case PhysicalType::UINT128:
 			TemplatedExecute<uhugeint_t, OP>(left, right, result, count);
+			break;
+		case PhysicalType::HALF_FLOAT:
+			TemplatedExecute<std::bfloat16_t, OP>(left, right, result, count);
 			break;
 		case PhysicalType::FLOAT:
 			TemplatedExecute<float, OP>(left, right, result, count);
