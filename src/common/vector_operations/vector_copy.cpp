@@ -145,7 +145,7 @@ void VectorOperations::Copy(const Vector &source_p, Vector &target, const Select
 	case PhysicalType::UINT128:
 		TemplatedCopy<uhugeint_t>(*source, *sel, target, source_offset, target_offset, copy_count);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		TemplatedCopy<std::bfloat16_t>(*source, *sel, target, source_offset, target_offset, copy_count);
 		break;
 	case PhysicalType::FLOAT:

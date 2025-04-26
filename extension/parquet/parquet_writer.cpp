@@ -98,7 +98,7 @@ bool ParquetWriter::TryGetParquetType(const LogicalType &duckdb_type, optional_p
 	case LogicalTypeId::BIGINT:
 		parquet_type = Type::INT64;
 		break;
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 	case LogicalTypeId::FLOAT:
 		parquet_type = Type::FLOAT;
 		break;

@@ -1039,7 +1039,7 @@ TupleDataScatterFunction TupleDataCollection::GetScatterFunction(const LogicalTy
 	case PhysicalType::UINT128:
 		result.function = TupleDataGetScatterFunction<uhugeint_t>(within_collection);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		result.function = TupleDataGetScatterFunction<std::bfloat16_t>(within_collection);
 		break;
 	case PhysicalType::FLOAT:
@@ -1524,7 +1524,7 @@ static TupleDataGatherFunction TupleDataGetGatherFunctionInternal(const LogicalT
 	case PhysicalType::UINT128:
 		result.function = TupleDataGetGatherFunction<uhugeint_t>(within_collection);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		result.function = TupleDataGetGatherFunction<std::bfloat16_t>(within_collection);
 		break;
 	case PhysicalType::FLOAT:

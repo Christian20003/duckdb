@@ -478,7 +478,7 @@ void Vector::SetValue(idx_t index, const Value &val) {
 	case PhysicalType::UINT128:
 		reinterpret_cast<uhugeint_t *>(data)[index] = val.GetValueUnsafe<uhugeint_t>();
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		reinterpret_cast<std::bfloat16_t*>(data)[index] = val.GetValueUnsafe<std::bfloat16_t>();
 		break;
 	case PhysicalType::FLOAT:
@@ -689,8 +689,8 @@ Value Vector::GetValueInternal(const Vector &v_p, idx_t index_p) {
 	}
 	case LogicalTypeId::POINTER:
 		return Value::POINTER(reinterpret_cast<uintptr_t *>(data)[index]);
-	case LogicalTypeId::HALF_FLOAT:
-		return Value::HALF_FLOAT(reinterpret_cast<std::bfloat16_t *>(data)[index]);
+	case LogicalTypeId::BFLOAT:
+		return Value::BFLOAT(reinterpret_cast<std::bfloat16_t *>(data)[index]);
 	case LogicalTypeId::FLOAT:
 		return Value::FLOAT(reinterpret_cast<float *>(data)[index]);
 	case LogicalTypeId::DOUBLE:
@@ -1005,7 +1005,7 @@ void Vector::Flatten(idx_t count) {
 		case PhysicalType::UINT128:
 			TemplatedFlattenConstantVector<uhugeint_t>(data, old_data, count);
 			break;
-		case PhysicalType::HALF_FLOAT:
+		case PhysicalType::BFLOAT:
 			TemplatedFlattenConstantVector<std::bfloat16_t>(data, old_data, count);
 			break;
 		case PhysicalType::FLOAT:

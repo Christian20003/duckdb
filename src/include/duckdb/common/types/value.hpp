@@ -159,7 +159,7 @@ public:
 	DUCKDB_API static Value DECIMAL(int64_t value, uint8_t width, uint8_t scale);
 	DUCKDB_API static Value DECIMAL(hugeint_t value, uint8_t width, uint8_t scale);
 	//! Create a bfloat Value from a specified value
-	DUCKDB_API static Value HALF_FLOAT(std::bfloat16_t value);
+	DUCKDB_API static Value BFLOAT(std::bfloat16_t value);
 	//! Create a float Value from a specified value
 	DUCKDB_API static Value FLOAT(float value);
 	//! Create a double Value from a specified value
@@ -328,7 +328,7 @@ private:
 		uint64_t ubigint;
 		hugeint_t hugeint;
 		uhugeint_t uhugeint;
-		std::bfloat16_t half_float;
+		std::bfloat16_t bfloat;
 		float float_;   // NOLINT
 		double double_; // NOLINT
 		uintptr_t pointer;

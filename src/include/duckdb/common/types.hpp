@@ -92,7 +92,7 @@ enum class PhysicalType : uint8_t {
 	INT64 = 9,
 
 	///// 2-byte floating point value
-	HALF_FLOAT = 10,
+	BFLOAT = 10,
 
 	/// 4-byte floating point value
 	FLOAT = 11,
@@ -231,7 +231,7 @@ enum class LogicalTypeId : uint8_t {
 	LAMBDA = 106,
 	UNION = 107,
 	ARRAY = 108,
-	HALF_FLOAT = 109
+	BFLOAT = 109
 };
 
 struct ExtraTypeInfo;
@@ -372,7 +372,7 @@ public:
 	static constexpr const LogicalTypeId UINTEGER = LogicalTypeId::UINTEGER;
 	static constexpr const LogicalTypeId BIGINT = LogicalTypeId::BIGINT;
 	static constexpr const LogicalTypeId UBIGINT = LogicalTypeId::UBIGINT;
-	static constexpr const LogicalTypeId HALF_FLOAT = LogicalTypeId::HALF_FLOAT;
+	static constexpr const LogicalTypeId BFLOAT = LogicalTypeId::BFLOAT;
 	static constexpr const LogicalTypeId FLOAT = LogicalTypeId::FLOAT;
 	static constexpr const LogicalTypeId DOUBLE = LogicalTypeId::DOUBLE;
 	static constexpr const LogicalTypeId DATE = LogicalTypeId::DATE;

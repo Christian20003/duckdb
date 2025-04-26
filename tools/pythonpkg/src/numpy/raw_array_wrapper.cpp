@@ -35,7 +35,7 @@ static idx_t GetNumpyTypeWidth(const LogicalType &type) {
 		return sizeof(int32_t);
 	case LogicalTypeId::BIGINT:
 		return sizeof(int64_t);
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return sizeof(std::bfloat16_t);
 	case LogicalTypeId::FLOAT:
 		return sizeof(float);
@@ -93,7 +93,7 @@ string RawArrayWrapper::DuckDBToNumpyDtype(const LogicalType &type) {
 		return "uint32";
 	case LogicalTypeId::UBIGINT:
 		return "uint64";
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return "bfloat16";
 	case LogicalTypeId::FLOAT:
 		return "float32";

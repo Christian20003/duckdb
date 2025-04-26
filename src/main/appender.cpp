@@ -216,7 +216,7 @@ void BaseAppender::AppendValueInternal(T input) {
 	case LogicalTypeId::UHUGEINT:
 		AppendValueInternal<T, uhugeint_t>(col, input);
 		break;
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		AppendValueInternal<T, std::bfloat16_t>(col, input);
 		break;
 	case LogicalTypeId::FLOAT:

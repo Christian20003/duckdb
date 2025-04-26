@@ -261,7 +261,7 @@ BoundCastInfo Varint::NumericToVarintCastSwitch(const LogicalType &source) {
 		return BoundCastInfo(&VectorCastHelpers::StringCast<uint64_t, IntCastToVarInt>);
 	case LogicalTypeId::UHUGEINT:
 		return BoundCastInfo(&VectorCastHelpers::StringCast<uhugeint_t, HugeintCastToVarInt>);
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastStringLoop<std::bfloat16_t, string_t, TryCastToVarInt>);
 	case LogicalTypeId::FLOAT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastStringLoop<float, string_t, TryCastToVarInt>);

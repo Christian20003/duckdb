@@ -204,7 +204,7 @@ duckdb_state deprecated_duckdb_translate_column(MaterializedQueryResult &result,
 	case LogicalTypeId::UBIGINT:
 		WriteData<uint64_t>(column, collection, column_ids);
 		break;
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		WriteData<std::bfloat16_t>(column, collection, column_ids);
 		break;
 	case LogicalTypeId::FLOAT:

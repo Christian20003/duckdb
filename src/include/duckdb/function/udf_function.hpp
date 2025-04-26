@@ -203,7 +203,7 @@ private:
 		} else if (std::is_same<T, int64_t>()) {
 			return LogicalType(LogicalTypeId::BIGINT);
 		} else if (std::is_same<T, std::bfloat16_t>()) {
-			return LogicalType(LogicalTypeId::HALF_FLOAT);
+			return LogicalType(LogicalTypeId::BFLOAT);
 		}else if (std::is_same<T, float>()) {
 			return LogicalType(LogicalTypeId::FLOAT);
 		} else if (std::is_same<T, double>()) {
@@ -334,7 +334,7 @@ private:
 		case LogicalTypeId::TIMESTAMP_SEC:
 		case LogicalTypeId::TIMESTAMP_TZ:
 			return std::is_same<T, timestamp_t>();
-		case LogicalTypeId::HALF_FLOAT:
+		case LogicalTypeId::BFLOAT:
 			return std::is_same<T, std::bfloat16_t>();
 		case LogicalTypeId::FLOAT:
 			return std::is_same<T, float>();

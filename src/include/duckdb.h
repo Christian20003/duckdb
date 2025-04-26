@@ -140,7 +140,7 @@ typedef enum DUCKDB_TYPE {
 	// INTEGER_LITERAL type
 	DUCKDB_TYPE_INTEGER_LITERAL = 38,
 	// bfloat
-	DUCKDB_TYPE_HALF_FLOAT = 39,
+	DUCKDB_TYPE_BFLOAT = 39,
 } duckdb_type;
 //! An enum over the returned state of different functions.
 typedef enum duckdb_state { DuckDBSuccess = 0, DuckDBError = 1 } duckdb_state;
@@ -1185,7 +1185,7 @@ DUCKDB_C_API float duckdb_value_float(duckdb_result *result, idx_t col, idx_t ro
 
 * @return The bfloat value at the specified location, or 0 if the value cannot be converted.
 */
-DUCKDB_C_API std::bfloat16_t duckdb_value_half_float(duckdb_result *result, idx_t col, idx_t row);
+DUCKDB_C_API std::bfloat16_t duckdb_value_bfloat(duckdb_result *result, idx_t col, idx_t row);
 
 /*!
 **DEPRECATION NOTICE**: This method is scheduled for removal in a future release.
@@ -1700,7 +1700,7 @@ DUCKDB_C_API duckdb_state duckdb_bind_float(duckdb_prepared_statement prepared_s
 /*!
 Binds a bfloat value to the prepared statement at the specified index.
 */
-DUCKDB_C_API duckdb_state duckdb_bind_half_float(duckdb_prepared_statement prepared_statement, idx_t param_idx, std::bfloat16_t val);
+DUCKDB_C_API duckdb_state duckdb_bind_bfloat(duckdb_prepared_statement prepared_statement, idx_t param_idx, std::bfloat16_t val);
 
 /*!
 Binds a double value to the prepared statement at the specified index.
@@ -2101,7 +2101,7 @@ Creates a value from a bfloat
 * @param input The bfloat value
 * @return The value. This must be destroyed with `duckdb_destroy_value`.
 */
-DUCKDB_C_API duckdb_value duckdb_create_half_float(std::bfloat16_t input);
+DUCKDB_C_API duckdb_value duckdb_create_bfloat(std::bfloat16_t input);
 
 /*!
 Creates a value from a double
@@ -2328,7 +2328,7 @@ Returns the bfloat value of the given value.
 * @param val A duckdb_value containing a bfloat
 * @return A bfloat, or NAN if the value cannot be converted
 */
-DUCKDB_C_API std::bfloat16_t duckdb_get_half_float(duckdb_value val);
+DUCKDB_C_API std::bfloat16_t duckdb_get_bfloat(duckdb_value val);
 
 /*!
 Returns the double value of the given value.
@@ -4052,7 +4052,7 @@ DUCKDB_C_API duckdb_state duckdb_append_float(duckdb_appender appender, float va
 /*!
 Append a bfloat value to the appender.
 */
-DUCKDB_C_API duckdb_state duckdb_append_half_float(duckdb_appender appender, std::bfloat16_t value);
+DUCKDB_C_API duckdb_state duckdb_append_bfloat(duckdb_appender appender, std::bfloat16_t value);
 
 /*!
 Append a double value to the appender.

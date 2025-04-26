@@ -158,7 +158,7 @@ void RowOperations::Gather(Vector &rows, const SelectionVector &row_sel, Vector 
 	case PhysicalType::INT128:
 		TemplatedGatherLoop<hugeint_t>(rows, row_sel, col, col_sel, count, layout, col_no, build_size);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		TemplatedGatherLoop<std::bfloat16_t>(rows, row_sel, col, col_sel, count, layout, col_no, build_size);
 		break;
 	case PhysicalType::FLOAT:

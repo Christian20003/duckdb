@@ -90,7 +90,7 @@ static constexpr const builtin_type_array BUILTIN_TYPES{{
 	{"guid", LogicalTypeId::UUID},
 	{"enum", LogicalTypeId::ENUM},
 	{"null", LogicalTypeId::SQLNULL},
-	{"tfloat", LogicalTypeId::HALF_FLOAT},
+	{"bfloat", LogicalTypeId::BFLOAT},
 	{"float", LogicalTypeId::FLOAT},
 	{"real", LogicalTypeId::FLOAT},
 	{"float4", LogicalTypeId::FLOAT},

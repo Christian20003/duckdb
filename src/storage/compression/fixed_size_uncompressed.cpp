@@ -299,7 +299,7 @@ CompressionFunction FixedSizeUncompressed::GetFunction(PhysicalType data_type) {
 		return FixedSizeGetFunction<hugeint_t>(data_type);
 	case PhysicalType::UINT128:
 		return FixedSizeGetFunction<uhugeint_t>(data_type);
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		return FixedSizeGetFunction<std::bfloat16_t>(data_type);
 	case PhysicalType::FLOAT:
 		return FixedSizeGetFunction<float>(data_type);

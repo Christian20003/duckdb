@@ -1570,7 +1570,7 @@ unique_ptr<ColumnReader> ColumnReader::CreateReader(ParquetReader &reader, const
 	case LogicalTypeId::BIGINT:
 		return make_uniq<TemplatedColumnReader<int64_t, TemplatedParquetValueConversion<int64_t>>>(
 		    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return make_uniq<TemplatedColumnReader<std::bfloat16_t, TemplatedParquetValueConversion<float>>>(
 			reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
 	case LogicalTypeId::FLOAT:

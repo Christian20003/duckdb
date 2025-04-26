@@ -253,8 +253,8 @@ Value Value::MinimumValue(const LogicalType &type) {
 		const auto ts = Timestamp::FromDatetime(date, dtime_t(0));
 		return Value::TIMESTAMPTZ(timestamp_tz_t(ts));
 	}
-	case LogicalTypeId::HALF_FLOAT:
-		return Value::HALF_FLOAT(NumericLimits<std::bfloat16_t>::Minimum());
+	case LogicalTypeId::BFLOAT:
+		return Value::BFLOAT(NumericLimits<std::bfloat16_t>::Minimum());
 	case LogicalTypeId::FLOAT:
 		return Value::FLOAT(NumericLimits<float>::Minimum());
 	case LogicalTypeId::DOUBLE:
@@ -342,8 +342,8 @@ Value Value::MaximumValue(const LogicalType &type) {
 	case LogicalTypeId::TIME_TZ:
 		// "24:00:00-1559" from the PG docs but actually "24:00:00-15:59:59".
 		return Value::TIMETZ(dtime_tz_t(dtime_t(Interval::MICROS_PER_DAY), dtime_tz_t::MIN_OFFSET));
-	case LogicalTypeId::HALF_FLOAT:
-		return Value::HALF_FLOAT(NumericLimits<std::bfloat16_t>::Maximum());
+	case LogicalTypeId::BFLOAT:
+		return Value::BFLOAT(NumericLimits<std::bfloat16_t>::Maximum());
 	case LogicalTypeId::FLOAT:
 		return Value::FLOAT(NumericLimits<float>::Maximum());
 	case LogicalTypeId::DOUBLE:
@@ -392,8 +392,8 @@ Value Value::Infinity(const LogicalType &type) {
 		return Value::TIMESTAMPNS(timestamp_ns_t(timestamp_t::infinity().value));
 	case LogicalTypeId::TIMESTAMP_TZ:
 		return Value::TIMESTAMPTZ(timestamp_tz_t(timestamp_t::infinity()));
-	case LogicalTypeId::HALF_FLOAT:
-		return Value::HALF_FLOAT(std::numeric_limits<std::bfloat16_t>::infinity());
+	case LogicalTypeId::BFLOAT:
+		return Value::BFLOAT(std::numeric_limits<std::bfloat16_t>::infinity());
 	case LogicalTypeId::FLOAT:
 		return Value::FLOAT(std::numeric_limits<float>::infinity());
 	case LogicalTypeId::DOUBLE:
@@ -417,8 +417,8 @@ Value Value::NegativeInfinity(const LogicalType &type) {
 		return Value::TIMESTAMPNS(timestamp_ns_t(timestamp_t::ninfinity().value));
 	case LogicalTypeId::TIMESTAMP_TZ:
 		return Value::TIMESTAMPTZ(timestamp_tz_t(timestamp_t::ninfinity()));
-	case LogicalTypeId::HALF_FLOAT:
-		return Value::HALF_FLOAT(-std::numeric_limits<std::bfloat16_t>::infinity());
+	case LogicalTypeId::BFLOAT:
+		return Value::BFLOAT(-std::numeric_limits<std::bfloat16_t>::infinity());
 	case LogicalTypeId::FLOAT:
 		return Value::FLOAT(-std::numeric_limits<float>::infinity());
 	case LogicalTypeId::DOUBLE:
@@ -634,9 +634,9 @@ Value Value::DECIMAL(hugeint_t value, uint8_t width, uint8_t scale) {
 	return result;
 }
 
-Value Value::HALF_FLOAT(std::bfloat16_t value) {
-	Value result(LogicalType::HALF_FLOAT);
-	result.value_.half_float = value;
+Value Value::BFLOAT(std::bfloat16_t value) {
+	Value result(LogicalType::BFLOAT);
+	result.value_.bfloat = value;
 	result.is_null = false;
 	return result;
 }
@@ -1096,7 +1096,7 @@ Value Value::CreateValue(string_t value) {
 
 template <>
 Value Value::CreateValue(std::bfloat16_t value) {
-	return Value::HALF_FLOAT(value);
+	return Value::BFLOAT(value);
 }
 
 template <>
@@ -1167,8 +1167,8 @@ T Value::GetValueInternal() const {
 		return Cast::Operation<uint32_t, T>(value_.uinteger);
 	case LogicalTypeId::UBIGINT:
 		return Cast::Operation<uint64_t, T>(value_.ubigint);
-	case LogicalTypeId::HALF_FLOAT:
-		return Cast::Operation<std::bfloat16_t, T>(value_.half_float);
+	case LogicalTypeId::BFLOAT:
+		return Cast::Operation<std::bfloat16_t, T>(value_.bfloat);
 	case LogicalTypeId::FLOAT:
 		return Cast::Operation<float, T>(value_.float_);
 	case LogicalTypeId::DOUBLE:
@@ -1365,8 +1365,8 @@ Value Value::Numeric(const LogicalType &type, int64_t value) {
 		return Value::UHUGEINT(NumericCast<uint64_t>(value));
 	case LogicalTypeId::DECIMAL:
 		return Value::DECIMAL(value, DecimalType::GetWidth(type), DecimalType::GetScale(type));
-	case LogicalTypeId::HALF_FLOAT:
-		return Value::HALF_FLOAT((std::bfloat16_t) value);
+	case LogicalTypeId::BFLOAT:
+		return Value::BFLOAT((std::bfloat16_t) value);
 	case LogicalTypeId::FLOAT:
 		return Value((float)value);
 	case LogicalTypeId::DOUBLE:
@@ -1518,8 +1518,8 @@ DUCKDB_API string_t Value::GetValueUnsafe() const {
 
 template <>
 std::bfloat16_t Value::GetValueUnsafe() const {
-	D_ASSERT(type_.InternalType() == PhysicalType::HALF_FLOAT);
-	return value_.half_float;
+	D_ASSERT(type_.InternalType() == PhysicalType::BFLOAT);
+	return value_.bfloat;
 }
 
 template <>
@@ -1655,7 +1655,7 @@ string Value::ToSQLString() const {
 		ret += is_unnamed ? ")" : "}";
 		return ret;
 	}
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return ToString();
 	case LogicalTypeId::FLOAT:
 		if (!FloatIsFinite(FloatValue::Get(*this))) {
@@ -2109,8 +2109,8 @@ void Value::SerializeInternal(Serializer &serializer, bool serialize_type) const
 	case PhysicalType::UINT128:
 		serializer.WriteProperty(102, "value", value_.uhugeint);
 		break;
-	case PhysicalType::HALF_FLOAT:
-		serializer.WriteProperty(102, "value", value_.half_float);
+	case PhysicalType::BFLOAT:
+		serializer.WriteProperty(102, "value", value_.bfloat);
 		break;
 	case PhysicalType::FLOAT:
 		serializer.WriteProperty(102, "value", value_.float_);
@@ -2195,8 +2195,8 @@ Value Value::Deserialize(Deserializer &deserializer) {
 	case PhysicalType::INT128:
 		new_value.value_.hugeint = deserializer.ReadProperty<hugeint_t>(102, "value");
 		break;
-	case PhysicalType::HALF_FLOAT:
-		new_value.value_.half_float = deserializer.ReadProperty<std::bfloat16_t>(102, "value");
+	case PhysicalType::BFLOAT:
+		new_value.value_.bfloat = deserializer.ReadProperty<std::bfloat16_t>(102, "value");
 		break;
 	case PhysicalType::FLOAT:
 		new_value.value_.float_ = deserializer.ReadProperty<float>(102, "value");
