@@ -331,7 +331,7 @@ void StringValueResult::AddValueToVector(const char *value_ptr, const idx_t size
 		    TryDoubleCast<double>(value_ptr, size, static_cast<double *>(vector_ptr[chunk_col_id])[number_of_rows],
 		                          false, state_machine.options.decimal_separator[0]);
 		break;
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		success = TryDoubleCast<std::bfloat16_t>(value_ptr, size, static_cast<std::bfloat16_t *>(vector_ptr[chunk_col_id])[number_of_rows],
 		                               false, state_machine.options.decimal_separator[0]);
 		break;
@@ -1650,7 +1650,7 @@ bool StringValueScanner::CanDirectlyCast(const LogicalType &type, bool icu_loade
 	case LogicalTypeId::UINTEGER:
 	case LogicalTypeId::UBIGINT:
 	case LogicalTypeId::DOUBLE:
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DATE:
 	case LogicalTypeId::TIMESTAMP:

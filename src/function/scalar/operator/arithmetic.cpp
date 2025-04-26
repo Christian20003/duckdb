@@ -65,7 +65,7 @@ template <class OP>
 static scalar_function_t GetScalarBinaryFunction(PhysicalType type) {
 	scalar_function_t function;
 	switch (type) {
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		function = &ScalarFunction::BinaryFunction<std::bfloat16_t, std::bfloat16_t, std::bfloat16_t, OP>;
 		break;
 	case PhysicalType::FLOAT:
@@ -1015,7 +1015,7 @@ static scalar_function_t GetBinaryFunctionIgnoreZero(PhysicalType type) {
 		return BinaryScalarFunctionIgnoreZero<hugeint_t, hugeint_t, hugeint_t, OP, BinaryNumericDivideHugeintWrapper>;
 	case PhysicalType::UINT128:
 		return BinaryScalarFunctionIgnoreZero<uhugeint_t, uhugeint_t, uhugeint_t, OP>;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		return BinaryScalarFunctionIgnoreZero<std::bfloat16_t, std::bfloat16_t, std::bfloat16_t, OP>;
 	case PhysicalType::FLOAT:
 		return BinaryScalarFunctionIgnoreZero<float, float, float, OP>;
@@ -1040,7 +1040,7 @@ unique_ptr<FunctionData> BindBinaryFloatingPoint(ClientContext &context, ScalarF
 
 ScalarFunctionSet OperatorFloatDivideFun::GetFunctions() {
 	ScalarFunctionSet fp_divide("/");
-	fp_divide.AddFunction(ScalarFunction({LogicalType::HALF_FLOAT, LogicalType::HALF_FLOAT}, LogicalType::HALF_FLOAT, nullptr,
+	fp_divide.AddFunction(ScalarFunction({LogicalType::BFLOAT, LogicalType::BFLOAT}, LogicalType::BFLOAT, nullptr,
 										 BindBinaryFloatingPoint<DivideOperator>));
 	fp_divide.AddFunction(ScalarFunction({LogicalType::FLOAT, LogicalType::FLOAT}, LogicalType::FLOAT, nullptr,
 	                                     BindBinaryFloatingPoint<DivideOperator>));
@@ -1120,7 +1120,7 @@ hugeint_t ModuloOperator::Operation(hugeint_t left, hugeint_t right) {
 ScalarFunctionSet OperatorModuloFun::GetFunctions() {
 	ScalarFunctionSet modulo("%");
 	for (auto &type : LogicalType::Numeric()) {
-		if (type.id() == LogicalTypeId::FLOAT || type.id() == LogicalTypeId::DOUBLE || type.id() == LogicalTypeId::HALF_FLOAT) {
+		if (type.id() == LogicalTypeId::FLOAT || type.id() == LogicalTypeId::DOUBLE || type.id() == LogicalTypeId::BFLOAT) {
 			modulo.AddFunction(ScalarFunction({type, type}, type, nullptr, BindBinaryFloatingPoint<ModuloOperator>));
 		} else if (type.id() == LogicalTypeId::DECIMAL) {
 			modulo.AddFunction(ScalarFunction({type, type}, type, nullptr, BindDecimalModulo<ModuloOperator>));

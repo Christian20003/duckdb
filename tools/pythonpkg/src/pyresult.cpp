@@ -524,7 +524,7 @@ py::str GetTypeToPython(const LogicalType &type) {
 	case LogicalTypeId::UBIGINT:
 	case LogicalTypeId::HUGEINT:
 	case LogicalTypeId::UHUGEINT:
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 	case LogicalTypeId::DECIMAL: {

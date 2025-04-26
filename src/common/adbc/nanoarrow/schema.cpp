@@ -94,7 +94,7 @@ const char *ArrowSchemaFormatTemplate(enum ArrowType data_type) {
 	case NANOARROW_TYPE_INT64:
 		return "l";
 
-	case NANOARROW_TYPE_HALF_FLOAT:
+	case NANOARROW_TYPE_BFLOAT:
 		return "e";
 	case NANOARROW_TYPE_FLOAT:
 		return "f";

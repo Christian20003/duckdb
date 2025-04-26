@@ -216,7 +216,7 @@ duckdb_state duckdb_append_uhugeint(duckdb_appender appender, duckdb_uhugeint va
 	return duckdb_append_internal<uhugeint_t>(appender, internal);
 }
 
-duckdb_state duckdb_append_half_float(duckdb_appender appender, std::bfloat16_t value) {
+duckdb_state duckdb_append_bfloat(duckdb_appender appender, std::bfloat16_t value) {
 	return duckdb_append_internal<std::bfloat16_t>(appender, value);
 }
 

@@ -231,7 +231,7 @@ bool ArrowTableFunction::ArrowPushdownType(const LogicalType &type) {
 	case LogicalTypeId::USMALLINT:
 	case LogicalTypeId::UINTEGER:
 	case LogicalTypeId::UBIGINT:
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 	case LogicalTypeId::VARCHAR:

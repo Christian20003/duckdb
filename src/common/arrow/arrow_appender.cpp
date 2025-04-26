@@ -208,7 +208,7 @@ static void InitializeFunctionPointers(ArrowAppendData &append_data, const Logic
 	case LogicalTypeId::UBIGINT:
 		InitializeAppenderForType<ArrowScalarData<uint64_t>>(append_data);
 		break;
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		InitializeAppenderForType<ArrowScalarData<std::bfloat16_t>>(append_data);
 		break;
 	case LogicalTypeId::FLOAT:

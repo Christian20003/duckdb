@@ -280,7 +280,7 @@ AggregateFunction GetTypedMedianAbsoluteDeviationAggregateFunction(const Logical
 
 AggregateFunction GetMedianAbsoluteDeviationAggregateFunctionInternal(const LogicalType &type) {
 	switch (type.id()) {
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return GetTypedMedianAbsoluteDeviationAggregateFunction<std::bfloat16_t, std::bfloat16_t, std::bfloat16_t>(type, type);
 	case LogicalTypeId::FLOAT:
 		return GetTypedMedianAbsoluteDeviationAggregateFunction<float, float, float>(type, type);
@@ -337,7 +337,7 @@ AggregateFunctionSet MadFun::GetFunctions() {
 	mad.AddFunction(AggregateFunction({LogicalTypeId::DECIMAL}, LogicalTypeId::DECIMAL, nullptr, nullptr, nullptr,
 	                                  nullptr, nullptr, nullptr, BindMedianAbsoluteDeviationDecimal));
 
-	const vector<LogicalType> MAD_TYPES = {LogicalType::HALF_FLOAT, LogicalType::FLOAT,     LogicalType::DOUBLE, LogicalType::DATE,
+	const vector<LogicalType> MAD_TYPES = {LogicalType::BFLOAT, LogicalType::FLOAT,     LogicalType::DOUBLE, LogicalType::DATE,
 	                                       LogicalType::TIMESTAMP, LogicalType::TIME,   LogicalType::TIMESTAMP_TZ,
 	                                       LogicalType::TIME_TZ};
 	for (const auto &type : MAD_TYPES) {

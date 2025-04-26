@@ -275,7 +275,7 @@ public:
 		case PhysicalType::UINT128:
 			TemplatedExecute<uhugeint_t, OP>(left, right, result, count);
 			break;
-		case PhysicalType::HALF_FLOAT:
+		case PhysicalType::BFLOAT:
 			TemplatedExecute<std::bfloat16_t, OP>(left, right, result, count);
 			break;
 		case PhysicalType::FLOAT:

@@ -78,7 +78,7 @@ unique_ptr<ArrowType> ArrowType::GetTypeFromFormat(string &format) {
 	} else if (format == "L") {
 		return make_uniq<ArrowType>(LogicalType::UBIGINT);
 	} else if (format == "hf") {
-		return make_uniq<ArrowType>(LogicalType::HALF_FLOAT);
+		return make_uniq<ArrowType>(LogicalType::BFLOAT);
 	} else if (format == "f") {
 		return make_uniq<ArrowType>(LogicalType::FLOAT);
 	} else if (format == "g") {

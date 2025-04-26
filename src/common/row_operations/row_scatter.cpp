@@ -212,7 +212,7 @@ void RowOperations::Scatter(DataChunk &columns, UnifiedVectorFormat col_data[], 
 		case PhysicalType::UINT128:
 			TemplatedScatter<uhugeint_t>(col, rows, sel, count, col_offset, col_no, column_count);
 			break;
-		case PhysicalType::HALF_FLOAT:
+		case PhysicalType::BFLOAT:
 			TemplatedScatter<std::bfloat16_t>(col, rows, sel, count, col_offset, col_no, column_count);
 			break;
 		case PhysicalType::FLOAT:

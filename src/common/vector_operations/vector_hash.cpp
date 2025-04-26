@@ -291,7 +291,7 @@ static inline void HashTypeSwitch(Vector &input, Vector &result, const Selection
 	case PhysicalType::UINT128:
 		TemplatedLoopHash<HAS_RSEL, uhugeint_t>(input, result, rsel, count);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		TemplatedLoopHash<HAS_RSEL, std::bfloat16_t>(input, result, rsel, count);
 		break;
 	case PhysicalType::FLOAT:
@@ -433,7 +433,7 @@ static inline void CombineHashTypeSwitch(Vector &hashes, Vector &input, const Se
 	case PhysicalType::UINT128:
 		TemplatedLoopCombineHash<HAS_RSEL, uhugeint_t>(input, hashes, rsel, count);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		TemplatedLoopCombineHash<HAS_RSEL, std::bfloat16_t>(input, hashes, rsel, count);
 		break;
 	case PhysicalType::FLOAT:

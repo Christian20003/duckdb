@@ -109,7 +109,7 @@ static BoundCastInfo VectorStringCastNumericSwitch(BindCastInput &input, const L
 		return BoundCastInfo(&VectorCastHelpers::TryCastStrictLoop<string_t, hugeint_t, duckdb::TryCast>);
 	case LogicalTypeId::UHUGEINT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastStrictLoop<string_t, uhugeint_t, duckdb::TryCast>);
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastStrictLoop<string_t, std::bfloat16_t, duckdb::TryCast>);
 	case LogicalTypeId::FLOAT:
 		return BoundCastInfo(&VectorCastHelpers::TryCastStrictLoop<string_t, float, duckdb::TryCast>);

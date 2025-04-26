@@ -16,7 +16,7 @@ CompressionFunction UncompressedFun::GetFunction(PhysicalType type) {
 	case PhysicalType::UINT32:
 	case PhysicalType::UINT64:
 	case PhysicalType::UINT128:
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 	case PhysicalType::FLOAT:
 	case PhysicalType::DOUBLE:
 	case PhysicalType::LIST:

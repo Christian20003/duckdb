@@ -276,7 +276,7 @@ void ColumnHelper::WriteColumns(idx_t start_index, idx_t start_col, idx_t end_co
 			numeric_scale = Value::INTEGER(0);
 			numeric_precision_radix = Value::INTEGER(2);
 			break;
-		case LogicalTypeId::HALF_FLOAT:
+		case LogicalTypeId::BFLOAT:
 			numeric_precision = Value::INTEGER(16);
 			numeric_scale = Value::INTEGER(0);
 			numeric_precision_radix = Value::INTEGER(2);

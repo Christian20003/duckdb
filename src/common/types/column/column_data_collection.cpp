@@ -748,7 +748,7 @@ ColumnDataCopyFunction ColumnDataCollection::GetCopyFunction(const LogicalType &
 	case PhysicalType::UINT128:
 		function = ColumnDataCopy<uhugeint_t>;
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		function = ColumnDataCopy<std::bfloat16_t>;
 		break;
 	case PhysicalType::FLOAT:

@@ -226,7 +226,7 @@ public:
 		case LogicalTypeId::UHUGEINT:
 			function = &ScalarFunction::UnaryFunction<uhugeint_t, uhugeint_t, OP>;
 			break;
-		case LogicalTypeId::HALF_FLOAT:
+		case LogicalTypeId::BFLOAT:
 			function = &ScalarFunction::UnaryFunction<std::bfloat16_t, std::bfloat16_t, OP>;
 			break;
 		case LogicalTypeId::FLOAT:
@@ -275,7 +275,7 @@ public:
 		case LogicalTypeId::UHUGEINT:
 			function = &ScalarFunction::UnaryFunction<uhugeint_t, TR, OP>;
 			break;
-		case LogicalTypeId::HALF_FLOAT:
+		case LogicalTypeId::BFLOAT:
 			function = &ScalarFunction::UnaryFunction<std::bfloat16_t, TR, OP>;
 			break;
 		case LogicalTypeId::FLOAT:

@@ -158,11 +158,11 @@ duckdb_decimal duckdb_get_decimal(duckdb_value val) {
 	duckdb::hugeint_t hugeint = duckdb::IntegralValue::Get(v);
 	return {width, scale, {hugeint.lower, hugeint.upper}};
 }
-duckdb_value duckdb_create_half_float(std::bfloat16_t input) {
+duckdb_value duckdb_create_bfloat(std::bfloat16_t input) {
 	return CAPICreateValue(input);
 }
-std::bfloat16_t duckdb_get_half_float(duckdb_value val) {
-	return CAPIGetValue<std::bfloat16_t, LogicalTypeId::HALF_FLOAT>(val);
+std::bfloat16_t duckdb_get_bfloat(duckdb_value val) {
+	return CAPIGetValue<std::bfloat16_t, LogicalTypeId::BFLOAT>(val);
 }
 duckdb_value duckdb_create_float(float input) {
 	return CAPICreateValue(input);

@@ -2828,27 +2828,27 @@ bool IsRepresentableExactly(int16_t input, float dst) {
 	return true;
 }
 
-const int64_t MAX_INT_REPRESENTABLE_IN_HALF_FLOAT = 0x000000100LL;
+const int64_t MAX_INT_REPRESENTABLE_IN_BFLOAT = 0x000000100LL;
 const int64_t MAX_INT_REPRESENTABLE_IN_FLOAT = 0x001000000LL;
 const int64_t MAX_INT_REPRESENTABLE_IN_DOUBLE = 0x0020000000000000LL;
 
 template <>
 bool IsRepresentableExactly(int16_t input, std::bfloat16_t dst) {
-	return (input <= MAX_INT_REPRESENTABLE_IN_HALF_FLOAT && input >= -MAX_INT_REPRESENTABLE_IN_HALF_FLOAT);
+	return (input <= MAX_INT_REPRESENTABLE_IN_BFLOAT && input >= -MAX_INT_REPRESENTABLE_IN_BFLOAT);
 }
 template <>
 bool IsRepresentableExactly(int32_t input, std::bfloat16_t dst) {
-	return (input <= MAX_INT_REPRESENTABLE_IN_HALF_FLOAT && input >= -MAX_INT_REPRESENTABLE_IN_HALF_FLOAT);
+	return (input <= MAX_INT_REPRESENTABLE_IN_BFLOAT && input >= -MAX_INT_REPRESENTABLE_IN_BFLOAT);
 }
 
 template <>
 bool IsRepresentableExactly(int64_t input, std::bfloat16_t dst) {
-	return (input <= MAX_INT_REPRESENTABLE_IN_HALF_FLOAT && input >= -MAX_INT_REPRESENTABLE_IN_HALF_FLOAT);
+	return (input <= MAX_INT_REPRESENTABLE_IN_BFLOAT && input >= -MAX_INT_REPRESENTABLE_IN_BFLOAT);
 }
 
 template <>
 bool IsRepresentableExactly(hugeint_t input, std::bfloat16_t dst) {
-	return (input <= MAX_INT_REPRESENTABLE_IN_HALF_FLOAT && input >= -MAX_INT_REPRESENTABLE_IN_HALF_FLOAT);
+	return (input <= MAX_INT_REPRESENTABLE_IN_BFLOAT && input >= -MAX_INT_REPRESENTABLE_IN_BFLOAT);
 }
 
 template <>

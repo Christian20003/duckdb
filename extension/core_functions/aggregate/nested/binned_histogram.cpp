@@ -187,7 +187,7 @@ static bool SupportsOtherBucket(const LogicalType &type) {
 	case LogicalTypeId::INTEGER:
 	case LogicalTypeId::BIGINT:
 	case LogicalTypeId::HUGEINT:
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 	case LogicalTypeId::DECIMAL:
@@ -235,7 +235,7 @@ static Value OtherBucketValue(const LogicalType &type) {
 	case LogicalTypeId::TIMESTAMP_SEC:
 	case LogicalTypeId::TIMESTAMP_MS:
 	case LogicalTypeId::TIMESTAMP_NS:
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 		return Value::Infinity(type);
@@ -369,7 +369,7 @@ AggregateFunction GetHistogramBinFunction(const LogicalType &type) {
 		return GetHistogramBinFunction<HistogramFunctor, int32_t, HIST>(type);
 	case PhysicalType::INT64:
 		return GetHistogramBinFunction<HistogramFunctor, int64_t, HIST>(type);
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		return GetHistogramBinFunction<HistogramFunctor, std::bfloat16_t, HIST>(type);
 	case PhysicalType::FLOAT:
 		return GetHistogramBinFunction<HistogramFunctor, float, HIST>(type);
