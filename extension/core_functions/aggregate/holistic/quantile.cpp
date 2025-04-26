@@ -403,7 +403,7 @@ AggregateFunction GetDiscreteQuantileTemplated(const LogicalType &type) {
 		return OP::template GetFunction<int64_t>(type);
 	case PhysicalType::INT128:
 		return OP::template GetFunction<hugeint_t>(type);
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		return OP::template GetFunction<std::bfloat16_t>(type);
 	case PhysicalType::FLOAT:
 		return OP::template GetFunction<float>(type);
@@ -511,7 +511,7 @@ AggregateFunction GetContinuousQuantileTemplated(const LogicalType &type) {
 		return OP::template GetFunction<int64_t, double>(type, LogicalType::DOUBLE);
 	case LogicalTypeId::HUGEINT:
 		return OP::template GetFunction<hugeint_t, double>(type, LogicalType::DOUBLE);
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return OP::template GetFunction<std::bfloat16_t, std::bfloat16_t>(type, type);
 	case LogicalTypeId::FLOAT:
 		return OP::template GetFunction<float, float>(type, type);
@@ -665,7 +665,7 @@ static bool CanInterpolate(const LogicalType &type) {
 	case LogicalTypeId::BIGINT:
 	case LogicalTypeId::UHUGEINT:
 	case LogicalTypeId::HUGEINT:
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 	case LogicalTypeId::DATE:
@@ -859,7 +859,7 @@ AggregateFunctionSet QuantileDiscFun::GetFunctions() {
 
 vector<LogicalType> GetContinuousQuantileTypes() {
 	return {LogicalType::TINYINT,   LogicalType::SMALLINT, LogicalType::INTEGER,      LogicalType::BIGINT,
-	        LogicalType::HUGEINT,   LogicalType::HALF_FLOAT, LogicalType::FLOAT,    LogicalType::DOUBLE,       LogicalType::DATE,
+	        LogicalType::HUGEINT,   LogicalType::BFLOAT, LogicalType::FLOAT,    LogicalType::DOUBLE,       LogicalType::DATE,
 	        LogicalType::TIMESTAMP, LogicalType::TIME,     LogicalType::TIMESTAMP_TZ, LogicalType::TIME_TZ};
 }
 

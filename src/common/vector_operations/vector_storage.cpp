@@ -60,7 +60,7 @@ void VectorOperations::WriteToStorage(Vector &source, idx_t count, data_ptr_t ta
 	case PhysicalType::UINT128:
 		CopyToStorageLoop<uhugeint_t>(vdata, count, target);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		CopyToStorageLoop<std::bfloat16_t>(vdata, count, target);
 		break;
 	case PhysicalType::FLOAT:
@@ -120,7 +120,7 @@ void VectorOperations::ReadFromStorage(data_ptr_t source, idx_t count, Vector &r
 	case PhysicalType::UINT128:
 		ReadFromStorageLoop<uhugeint_t>(source, count, result);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		ReadFromStorageLoop<std::bfloat16_t>(source, count, result);
 		break;
 	case PhysicalType::FLOAT:

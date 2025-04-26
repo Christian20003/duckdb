@@ -153,7 +153,7 @@ bool CSVSniffer::CanYouCastIt(ClientContext &context, const string_t value, cons
 		double dummy_value;
 		return TryDoubleCast<double>(value_ptr, value_size, dummy_value, true, decimal_separator);
 	}
-	case LogicalTypeId::HALF_FLOAT: {
+	case LogicalTypeId::BFLOAT: {
 		std::bfloat16_t dummy_value;
 		return TryDoubleCast<std::bfloat16_t>(value_ptr, value_size, dummy_value, true, decimal_separator);
 	}

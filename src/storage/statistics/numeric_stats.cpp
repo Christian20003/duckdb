@@ -265,7 +265,7 @@ FilterPropagateResult NumericStats::CheckZonemap(const BaseStatistics &stats, Ex
 		return CheckZonemapTemplated<hugeint_t>(stats, comparison_type, constants);
 	case PhysicalType::UINT128:
 		return CheckZonemapTemplated<uhugeint_t>(stats, comparison_type, constants);
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		return CheckZonemapTemplated<std::bfloat16_t>(stats, comparison_type, constants);
 	case PhysicalType::FLOAT:
 		return CheckZonemapTemplated<float>(stats, comparison_type, constants);
@@ -323,7 +323,7 @@ void SetNumericValueInternal(const Value &input, const LogicalType &type, Numeri
 	case PhysicalType::UINT128:
 		val.value_.uhugeint = UhugeIntValue::Get(input);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		val.value_.halffloat = HalfFloatValue::Get(input);
 		break;
 	case PhysicalType::FLOAT:
@@ -371,8 +371,8 @@ Value NumericValueUnionToValueInternal(const LogicalType &type, const NumericVal
 		return Value::HUGEINT(val.value_.hugeint);
 	case PhysicalType::UINT128:
 		return Value::UHUGEINT(val.value_.uhugeint);
-	case PhysicalType::HALF_FLOAT:
-		return Value::HALF_FLOAT(val.value_.halffloat);
+	case PhysicalType::BFLOAT:
+		return Value::BFLOAT(val.value_.halffloat);
 	case PhysicalType::FLOAT:
 		return Value::FLOAT(val.value_.float_);
 	case PhysicalType::DOUBLE:
@@ -474,7 +474,7 @@ static void SerializeNumericStatsValue(const LogicalType &type, NumericValueUnio
 	case PhysicalType::UINT128:
 		serializer.WriteProperty(101, "value", val.value_.uhugeint);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		serializer.WriteProperty(101, "value", val.value_.halffloat);
 		break;
 	case PhysicalType::FLOAT:
@@ -530,7 +530,7 @@ static void DeserializeNumericStatsValue(const LogicalType &type, NumericValueUn
 	case PhysicalType::UINT128:
 		result.value_.uhugeint = deserializer.ReadProperty<uhugeint_t>(101, "value");
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		result.value_.halffloat = deserializer.ReadProperty<std::bfloat16_t>(101, "value");
 		break;
 	case PhysicalType::FLOAT:
@@ -631,7 +631,7 @@ void NumericStats::Verify(const BaseStatistics &stats, Vector &vector, const Sel
 	case PhysicalType::UINT128:
 		TemplatedVerify<uhugeint_t>(stats, vector, sel, count);
 		break;
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		TemplatedVerify<std::bfloat16_t>(stats, vector, sel, count);
 		break;
 	case PhysicalType::FLOAT:

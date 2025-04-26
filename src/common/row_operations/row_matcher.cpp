@@ -296,7 +296,7 @@ MatchFunction RowMatcher::GetMatchFunction(const LogicalType &type, const Expres
 		return GetMatchFunction<NO_MATCH_SEL, uint64_t>(predicate);
 	case PhysicalType::UINT128:
 		return GetMatchFunction<NO_MATCH_SEL, uhugeint_t>(predicate);
-	case PhysicalType::HALF_FLOAT:
+	case PhysicalType::BFLOAT:
 		return GetMatchFunction<NO_MATCH_SEL, std::bfloat16_t>(predicate);
 	case PhysicalType::FLOAT:
 		return GetMatchFunction<NO_MATCH_SEL, float>(predicate);

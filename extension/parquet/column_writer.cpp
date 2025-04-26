@@ -2543,7 +2543,7 @@ unique_ptr<ColumnWriter> ColumnWriter::CreateWriterRecursive(ClientContext &cont
 	case LogicalTypeId::UBIGINT:
 		return make_uniq<StandardColumnWriter<uint64_t, uint64_t>>(writer, schema_idx, std::move(schema_path),
 		                                                           max_repeat, max_define, can_have_nulls);
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return make_uniq<StandardColumnWriter<half_float_na_equal, float>>(writer, schema_idx, std::move(schema_path),
 																	  max_repeat, max_define, can_have_nulls);
 	case LogicalTypeId::FLOAT:

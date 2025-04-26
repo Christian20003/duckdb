@@ -271,7 +271,7 @@ py::object GetScalar(Value &constant, const string &timezone_config, const Arrow
 		py::object integer_type = py::module_::import("pyarrow").attr("uint64");
 		return dataset_scalar(scalar(constant.GetValue<uint64_t>(), integer_type()));
 	}
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 		return dataset_scalar(constant.GetValue<std::bfloat16_t>());
 	case LogicalTypeId::FLOAT:
 		return dataset_scalar(constant.GetValue<float>());

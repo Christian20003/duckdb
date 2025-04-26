@@ -23,7 +23,7 @@ bool CSVSniffer::TryCastVector(Vector &parse_chunk_col, idx_t size, const Logica
 		return CSVCast::TryCastTimestampVector(sniffing_state_machine.dialect_options.date_format, parse_chunk_col,
 		                                       dummy_result, size, parameters);
 	}
-	if ((sql_type.id() == LogicalTypeId::DOUBLE || sql_type.id() == LogicalTypeId::FLOAT || sql_type.id() == LogicalTypeId::HALF_FLOAT) &&
+	if ((sql_type.id() == LogicalTypeId::DOUBLE || sql_type.id() == LogicalTypeId::FLOAT || sql_type.id() == LogicalTypeId::BFLOAT) &&
 	    options.decimal_separator == ",") {
 		string error_message;
 		CastParameters parameters(false, &error_message);

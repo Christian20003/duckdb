@@ -215,7 +215,7 @@ static void AddArrayFoldFunction(ScalarFunctionSet &set, const LogicalType &type
 		ScalarFunction function({array, array}, type, ArrayGenericFold<float, OP>, ArrayGenericBinaryBind);
 		BaseScalarFunction::SetReturnsError(function);
 		set.AddFunction(function);
-	} else if (type.id() == LogicalTypeId::HALF_FLOAT) {
+	} else if (type.id() == LogicalTypeId::BFLOAT) {
 		ScalarFunction function({array, array}, type, ArrayGenericFold<std::bfloat16_t, OP>, ArrayGenericBinaryBind);
 		BaseScalarFunction::SetReturnsError(function);
 		set.AddFunction(function);

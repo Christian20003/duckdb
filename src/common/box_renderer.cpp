@@ -202,7 +202,7 @@ ValueRenderAlignment BoxRenderer::TypeAlignment(const LogicalType &type) {
 	case LogicalTypeId::UBIGINT:
 	case LogicalTypeId::UHUGEINT:
 	case LogicalTypeId::DECIMAL:
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 		return ValueRenderAlignment::RIGHT;
@@ -553,7 +553,7 @@ string BoxRenderer::ConvertRenderValue(const string &input, const LogicalType &t
 	case LogicalTypeId::UBIGINT:
 	case LogicalTypeId::UHUGEINT:
 	case LogicalTypeId::DECIMAL:
-	case LogicalTypeId::HALF_FLOAT:
+	case LogicalTypeId::BFLOAT:
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
 		return FormatNumber(input);
