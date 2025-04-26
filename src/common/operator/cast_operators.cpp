@@ -1101,10 +1101,7 @@ bool TryCast::Operation(string_t input, uint64_t &result, bool strict) {
 
 template <>
 bool TryCast::Operation(string_t input, std::bfloat16_t &result, bool strict) {
-	float res = 0;
-	bool ret = TryDoubleCast<float>(input.GetData(), input.GetSize(), res, strict);
-	result = static_cast<std::bfloat16_t>(res);
-	return ret;
+	return TryDoubleCast<std::bfloat16_t>(input.GetData(), input.GetSize(), result, strict, '.');
 }
 
 template <>
@@ -1119,13 +1116,11 @@ bool TryCast::Operation(string_t input, double &result, bool strict) {
 
 template <>
 bool TryCastErrorMessageCommaSeparated::Operation(string_t input, std::bfloat16_t&result, CastParameters &parameters) {
-	float res = 0;
-	if (!TryDoubleCast<float>(input.GetData(), input.GetSize(), res, parameters.strict, ',')) {
+	if (!TryDoubleCast<std::bfloat16_t>(input.GetData(), input.GetSize(), result, parameters.strict, ',')) {
 		HandleCastError::AssignError(StringUtil::Format("Could not cast string to float: \"%s\"", input.GetString()),
 		parameters);
 		return false;
 	}
-	result = static_cast<std::bfloat16_t>(res);
 	return true;
 }
 

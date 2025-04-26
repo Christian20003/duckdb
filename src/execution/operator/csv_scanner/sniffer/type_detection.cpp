@@ -6,7 +6,7 @@
 #include "duckdb/common/types/time.hpp"
 #include "duckdb/execution/operator/csv_scanner/sniffer/csv_sniffer.hpp"
 
-//#include <stdfloat>
+#include <stdfloat>
 
 namespace duckdb {
 struct TryCastFloatingOperator {
@@ -154,8 +154,8 @@ bool CSVSniffer::CanYouCastIt(ClientContext &context, const string_t value, cons
 		return TryDoubleCast<double>(value_ptr, value_size, dummy_value, true, decimal_separator);
 	}
 	case LogicalTypeId::HALF_FLOAT: {
-		float dummy_value;
-		return TryDoubleCast<float>(value_ptr, value_size, dummy_value, true, decimal_separator);
+		std::bfloat16_t dummy_value;
+		return TryDoubleCast<std::bfloat16_t>(value_ptr, value_size, dummy_value, true, decimal_separator);
 	}
 	case LogicalTypeId::FLOAT: {
 		float dummy_value;
