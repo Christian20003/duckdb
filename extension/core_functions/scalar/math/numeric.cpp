@@ -68,19 +68,18 @@ struct NextAfterOperator {
 	}
 	template <class TA, class TB, class TR>
 	static inline std::bfloat16_t Operation(std::bfloat16_t input, std::bfloat16_t approximate_to) {
-		return nextafterf(input, approximate_to);
+		return static_cast<std::bfloat16_t>(nextafterf(static_cast<float>(input), static_cast<float>(approximate_to)));
 	}
 };
 
 ScalarFunctionSet NextAfterFun::GetFunctions() {
 	ScalarFunctionSet next_after_fun;
-	next_after_fun.AddFunction(
-	    ScalarFunction({LogicalType::DOUBLE, LogicalType::DOUBLE}, LogicalType::DOUBLE,
+	next_after_fun.AddFunction(ScalarFunction({LogicalType::DOUBLE, LogicalType::DOUBLE}, LogicalType::DOUBLE,
 	                   ScalarFunction::BinaryFunction<double, double, double, NextAfterOperator>));
+	next_after_fun.AddFunction(ScalarFunction({LogicalType::FLOAT, LogicalType::FLOAT}, LogicalType::FLOAT,
+						ScalarFunction::BinaryFunction<float, float, float, NextAfterOperator>));
 	next_after_fun.AddFunction(ScalarFunction({LogicalType::BFLOAT, LogicalType::BFLOAT}, LogicalType::BFLOAT,
 						ScalarFunction::BinaryFunction<std::bfloat16_t, std::bfloat16_t, std::bfloat16_t, NextAfterOperator>));
-	next_after_fun.AddFunction(ScalarFunction({LogicalType::FLOAT, LogicalType::FLOAT}, LogicalType::FLOAT,
-	                                          ScalarFunction::BinaryFunction<float, float, float, NextAfterOperator>));
 	return next_after_fun;
 }
 
