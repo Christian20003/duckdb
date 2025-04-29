@@ -86,43 +86,43 @@ bool TryCastWithOverflowCheckFloat(SRC value, T &result, SRC min, SRC max) {
 
 template <>
 bool TryCastWithOverflowCheck(std::bfloat16_t value, int8_t &result) {
-	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int8_t>(value, result, -128.0f, 128.0f);
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int8_t>(value, result, -128.0bf16, 128.0bf16);
 }
 
 template <>
 bool TryCastWithOverflowCheck(std::bfloat16_t value, int16_t &result) {
-	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int16_t>(value, result, -32768.0f, 32768.0f);
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int16_t>(value, result, -32768.0bf16, 32768.0bf16);
 }
 
 template <>
 bool TryCastWithOverflowCheck(std::bfloat16_t value, int32_t &result) {
-	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int32_t>(value, result, -2147483648.0f, 2147483648.0f);
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int32_t>(value, result, -2147483648.0bf16, 2147483648.0bf16);
 }
 
 template <>
 bool TryCastWithOverflowCheck(std::bfloat16_t value, int64_t &result) {
-	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int64_t>(value, result, -9223372036854775808.0f,
-	                                                     9223372036854775808.0f);
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, int64_t>(value, result, -9223372036854775808.0bf16,
+	                                                     9223372036854775808.0bf16);
 }
 
 template <>
 bool TryCastWithOverflowCheck(std::bfloat16_t value, uint8_t &result) {
-	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint8_t>(value, result, 0.0f, 256.0f);
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint8_t>(value, result, 0.0bf16, 256.0bf16);
 }
 
 template <>
 bool TryCastWithOverflowCheck(std::bfloat16_t value, uint16_t &result) {
-	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint16_t>(value, result, 0.0f, 65536.0f);
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint16_t>(value, result, 0.0bf16, 65536.0bf16);
 }
 
 template <>
 bool TryCastWithOverflowCheck(std::bfloat16_t value, uint32_t &result) {
-	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint32_t>(value, result, 0.0f, 4294967296.0f);
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint32_t>(value, result, 0.0bf16, 4294967296.0bf16);
 }
 
 template <>
 bool TryCastWithOverflowCheck(std::bfloat16_t value, uint64_t &result) {
-	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint64_t>(value, result, 0.0f, 18446744073709551616.0f);
+	return TryCastWithOverflowCheckFloat<std::bfloat16_t, uint64_t>(value, result, 0.0bf16, 18446744073709551616.0bf16);
 }
 
 template <>
