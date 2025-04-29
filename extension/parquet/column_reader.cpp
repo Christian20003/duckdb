@@ -1571,7 +1571,7 @@ unique_ptr<ColumnReader> ColumnReader::CreateReader(ParquetReader &reader, const
 		return make_uniq<TemplatedColumnReader<int64_t, TemplatedParquetValueConversion<int64_t>>>(
 		    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
 	case LogicalTypeId::BFLOAT:
-		return make_uniq<TemplatedColumnReader<std::bfloat16_t, TemplatedParquetValueConversion<float>>>(
+		return make_uniq<TemplatedColumnReader<std::bfloat16_t, TemplatedParquetValueConversion<std::bfloat16_t>>>(
 			reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
 	case LogicalTypeId::FLOAT:
 		return make_uniq<TemplatedColumnReader<float, TemplatedParquetValueConversion<float>>>(
