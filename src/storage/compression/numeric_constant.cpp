@@ -5,6 +5,8 @@
 #include "duckdb/storage/table/column_segment.hpp"
 #include "duckdb/storage/table/scan_state.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //===--------------------------------------------------------------------===//
@@ -219,6 +221,8 @@ CompressionFunction ConstantFun::GetFunction(PhysicalType data_type) {
 		return ConstantGetFunction<hugeint_t>(data_type);
 	case PhysicalType::UINT128:
 		return ConstantGetFunction<uhugeint_t>(data_type);
+	case PhysicalType::BFLOAT:
+		return ConstantGetFunction<std::bfloat16_t>(data_type);
 	case PhysicalType::FLOAT:
 		return ConstantGetFunction<float>(data_type);
 	case PhysicalType::DOUBLE:
@@ -242,6 +246,7 @@ bool ConstantFun::TypeIsSupported(const PhysicalType physical_type) {
 	case PhysicalType::UINT64:
 	case PhysicalType::INT128:
 	case PhysicalType::UINT128:
+	case PhysicalType::BFLOAT:
 	case PhysicalType::FLOAT:
 	case PhysicalType::DOUBLE:
 		return true;
