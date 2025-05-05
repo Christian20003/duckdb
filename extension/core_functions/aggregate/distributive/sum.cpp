@@ -5,6 +5,8 @@
 #include "duckdb/planner/expression/bound_aggregate_expression.hpp"
 #include "duckdb/common/serializer/deserializer.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct SumSetOperation {
@@ -220,6 +222,10 @@ AggregateFunctionSet SumFun::GetFunctions() {
 	sum.AddFunction(GetSumAggregate(PhysicalType::INT32));
 	sum.AddFunction(GetSumAggregate(PhysicalType::INT64));
 	sum.AddFunction(GetSumAggregate(PhysicalType::INT128));
+	sum.AddFunction(AggregateFunction::UnaryAggregate<SumState<std::bfloat16_t>, std::bfloat16_t, std::bfloat16_t, NumericSumOperation>(
+	    LogicalType::BFLOAT, LogicalType::BFLOAT));
+	sum.AddFunction(AggregateFunction::UnaryAggregate<SumState<float>, float, float, NumericSumOperation>(
+			LogicalType::FLOAT, LogicalType::FLOAT));
 	sum.AddFunction(AggregateFunction::UnaryAggregate<SumState<double>, double, double, NumericSumOperation>(
 	    LogicalType::DOUBLE, LogicalType::DOUBLE));
 	return sum;
