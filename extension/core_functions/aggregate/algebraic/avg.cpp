@@ -5,6 +5,8 @@
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/planner/expression.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 template <class T>
@@ -183,6 +185,10 @@ AggregateFunctionSet AvgFun::GetFunctions() {
 	avg.AddFunction(GetAverageAggregate(PhysicalType::INT32));
 	avg.AddFunction(GetAverageAggregate(PhysicalType::INT64));
 	avg.AddFunction(GetAverageAggregate(PhysicalType::INT128));
+	avg.AddFunction(AggregateFunction::UnaryAggregate<AvgState<std::bfloat16_t>, std::bfloat16_t, std::bfloat16_t, NumericAverageOperation>(
+	    LogicalType::BFLOAT, LogicalType::BFLOAT));
+		avg.AddFunction(AggregateFunction::UnaryAggregate<AvgState<float>, float, float, NumericAverageOperation>(
+			LogicalType::FLOAT, LogicalType::FLOAT));
 	avg.AddFunction(AggregateFunction::UnaryAggregate<AvgState<double>, double, double, NumericAverageOperation>(
 	    LogicalType::DOUBLE, LogicalType::DOUBLE));
 	return avg;
