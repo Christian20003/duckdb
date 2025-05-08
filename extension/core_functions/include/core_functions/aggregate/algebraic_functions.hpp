@@ -63,7 +63,7 @@ struct FAvgFun {
 	static constexpr const char *Description = "Calculates the average using a more accurate floating point summation (Kahan Sum)";
 	static constexpr const char *Example = "favg(A)";
 
-	static AggregateFunction GetFunction();
+	static AggregateFunctionSet GetFunctions();
 };
 
 struct StandardErrorOfTheMeanFun {
