@@ -14,9 +14,10 @@
 
 namespace duckdb {
 
-static inline void KahanAddInternal(double input, double &summed, double &err) {
-	double diff = input - err;
-	double newval = summed + diff;
+template <class T>
+static inline void KahanAddInternal(T input, T &summed, T &err) {
+	T diff = input - err;
+	T newval = summed + diff;
 	err = (newval - summed) - diff;
 	summed = newval;
 }
@@ -36,14 +37,15 @@ struct SumState {
 	}
 };
 
+template <class T>
 struct KahanSumState {
 	bool isset;
-	double value;
-	double err;
+	T value;
+	T err;
 
 	void Initialize() {
 		this->isset = false;
-		this->err = 0.0;
+		this->err = static_cast<T>(0);
 	}
 
 	void Combine(const KahanSumState &other) {

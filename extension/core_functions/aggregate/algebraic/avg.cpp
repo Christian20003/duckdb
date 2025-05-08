@@ -24,14 +24,15 @@ struct AvgState {
 	}
 };
 
+template <class T>
 struct KahanAvgState {
 	uint64_t count;
-	double value;
-	double err;
+	T value;
+	T err;
 
 	void Initialize() {
 		this->count = 0;
-		this->err = 0.0;
+		this->err = static_cast<T>(0);
 	}
 
 	void Combine(const KahanAvgState &other) {
@@ -194,9 +195,21 @@ AggregateFunctionSet AvgFun::GetFunctions() {
 	return avg;
 }
 
-AggregateFunction FAvgFun::GetFunction() {
-	return AggregateFunction::UnaryAggregate<KahanAvgState, double, double, KahanAverageOperation>(LogicalType::DOUBLE,
-	                                                                                               LogicalType::DOUBLE);
+AggregateFunctionSet FAvgFun::GetFunctions() {
+	AggregateFunctionSet kahan_avg;
+	kahan_avg.AddFunction(
+		AggregateFunction::UnaryAggregate<KahanAvgState<double>, double, double, KahanAverageOperation>(
+			LogicalType::DOUBLE,LogicalType::DOUBLE)
+		);
+	kahan_avg.AddFunction(
+		AggregateFunction::UnaryAggregate<KahanAvgState<float>, float, float, KahanAverageOperation>(
+			LogicalType::FLOAT,LogicalType::FLOAT)
+		);
+	kahan_avg.AddFunction(
+		AggregateFunction::UnaryAggregate<KahanAvgState<std::bfloat16_t>, std::bfloat16_t, std::bfloat16_t, KahanAverageOperation>(
+			LogicalType::BFLOAT,LogicalType::BFLOAT)
+		);
+	return kahan_avg;
 }
 
 } // namespace duckdb
