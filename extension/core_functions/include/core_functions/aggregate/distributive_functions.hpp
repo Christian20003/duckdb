@@ -168,7 +168,7 @@ struct KahanSumFun {
 	static constexpr const char *Description = "Calculates the sum using a more accurate floating point summation (Kahan Sum).";
 	static constexpr const char *Example = "kahan_sum(A)";
 
-	static AggregateFunction GetFunction();
+	static AggregateFunctionSet GetFunctions();
 };
 
 struct FsumFun {

@@ -243,9 +243,15 @@ AggregateFunctionSet SumNoOverflowFun::GetFunctions() {
 	return sum_no_overflow;
 }
 
-AggregateFunction KahanSumFun::GetFunction() {
-	return AggregateFunction::UnaryAggregate<KahanSumState, double, double, KahanSumOperation>(LogicalType::DOUBLE,
-	                                                                                           LogicalType::DOUBLE);
+AggregateFunctionSet KahanSumFun::GetFunctions() {
+	AggregateFunctionSet kahan_sum;
+	kahan_sum.AddFunction(AggregateFunction::UnaryAggregate<KahanSumState<double>, double, double, KahanSumOperation>(
+			LogicalType::DOUBLE, LogicalType::DOUBLE));
+	kahan_sum.AddFunction(AggregateFunction::UnaryAggregate<KahanSumState<float>, float, float, KahanSumOperation>(
+		LogicalType::FLOAT, LogicalType::FLOAT));
+	kahan_sum.AddFunction(AggregateFunction::UnaryAggregate<KahanSumState<std::bfloat16_t>, std::bfloat16_t, std::bfloat16_t, KahanSumOperation>(
+		LogicalType::BFLOAT, LogicalType::BFLOAT));
+	return kahan_sum;
 }
 
 } // namespace duckdb
