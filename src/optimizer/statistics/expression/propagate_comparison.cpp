@@ -20,6 +20,7 @@ FilterPropagateResult StatisticsPropagator::PropagateComparison(BaseStatistics &
 	case PhysicalType::INT32:
 	case PhysicalType::INT64:
 	case PhysicalType::INT128:
+	case PhysicalType::BFLOAT:
 	case PhysicalType::FLOAT:
 	case PhysicalType::DOUBLE:
 		break;

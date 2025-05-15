@@ -2,6 +2,8 @@
 #include "duckdb/common/uhugeint.hpp"
 #include "duckdb/execution/nested_loop_join.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct InitialNestedLoopJoin {
@@ -112,6 +114,9 @@ static idx_t NestedLoopJoinTypeSwitch(Vector &left, Vector &right, idx_t left_si
 	case PhysicalType::UINT128:
 		return NLTYPE::template Operation<uhugeint_t, OP>(left, right, left_size, right_size, lpos, rpos, lvector,
 		                                                  rvector, current_match_count);
+	case PhysicalType::BFLOAT:
+		return NLTYPE::template Operation<std::bfloat16_t, OP>(left, right, left_size, right_size, lpos, rpos, lvector,
+		                                                       rvector, current_match_count);
 	case PhysicalType::FLOAT:
 		return NLTYPE::template Operation<float, OP>(left, right, left_size, right_size, lpos, rpos, lvector, rvector,
 		                                             current_match_count);

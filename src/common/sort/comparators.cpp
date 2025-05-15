@@ -4,6 +4,8 @@
 #include "duckdb/common/sort/sort.hpp"
 #include "duckdb/common/uhugeint.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 bool Comparators::TieIsBreakable(const idx_t &tie_col, const data_ptr_t &row_ptr, const SortLayout &sort_layout) {
@@ -138,6 +140,8 @@ int Comparators::CompareValAndAdvance(data_ptr_t &l_ptr, data_ptr_t &r_ptr, cons
 		return TemplatedCompareAndAdvance<hugeint_t>(l_ptr, r_ptr);
 	case PhysicalType::UINT128:
 		return TemplatedCompareAndAdvance<uhugeint_t>(l_ptr, r_ptr);
+	case PhysicalType::BFLOAT:
+		return TemplatedCompareAndAdvance<std::bfloat16_t>(l_ptr, r_ptr);
 	case PhysicalType::FLOAT:
 		return TemplatedCompareAndAdvance<float>(l_ptr, r_ptr);
 	case PhysicalType::DOUBLE:
@@ -280,6 +284,11 @@ int Comparators::CompareArrayAndAdvance(data_ptr_t &left_ptr, data_ptr_t &right_
 			comp_res =
 			    TemplatedCompareListLoop<hugeint_t>(left_ptr, right_ptr, left_validity, right_validity, array_size);
 			break;
+		case PhysicalType::BFLOAT:
+			comp_res =
+			    TemplatedCompareListLoop<std::bfloat16_t>(left_ptr, right_ptr, left_validity, right_validity,
+			                                              array_size);
+			break;
 		case PhysicalType::FLOAT:
 			comp_res = TemplatedCompareListLoop<float>(left_ptr, right_ptr, left_validity, right_validity, array_size);
 			break;
@@ -392,6 +401,10 @@ int Comparators::CompareListAndAdvance(data_ptr_t &left_ptr, data_ptr_t &right_p
 			break;
 		case PhysicalType::UINT128:
 			comp_res = TemplatedCompareListLoop<uhugeint_t>(left_ptr, right_ptr, left_validity, right_validity, count);
+			break;
+		case PhysicalType::BFLOAT:
+			comp_res = TemplatedCompareListLoop<std::bfloat16_t>(left_ptr, right_ptr, left_validity, right_validity,
+			                                                    count);
 			break;
 		case PhysicalType::FLOAT:
 			comp_res = TemplatedCompareListLoop<float>(left_ptr, right_ptr, left_validity, right_validity, count);
