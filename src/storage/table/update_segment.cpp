@@ -9,6 +9,7 @@
 #include "duckdb/transaction/undo_buffer.hpp"
 
 #include <algorithm>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -185,6 +186,8 @@ static UpdateSegment::fetch_update_function_t GetFetchUpdateFunction(PhysicalTyp
 		return UpdateMergeFetch<hugeint_t>;
 	case PhysicalType::UINT128:
 		return UpdateMergeFetch<uhugeint_t>;
+	case PhysicalType::BFLOAT:
+		return UpdateMergeFetch<std::bfloat16_t>;
 	case PhysicalType::FLOAT:
 		return UpdateMergeFetch<float>;
 	case PhysicalType::DOUBLE:
@@ -265,6 +268,8 @@ static UpdateSegment::fetch_committed_function_t GetFetchCommittedFunction(Physi
 		return TemplatedFetchCommitted<hugeint_t>;
 	case PhysicalType::UINT128:
 		return TemplatedFetchCommitted<uhugeint_t>;
+	case PhysicalType::BFLOAT:
+		return TemplatedFetchCommitted<std::bfloat16_t>;
 	case PhysicalType::FLOAT:
 		return TemplatedFetchCommitted<float>;
 	case PhysicalType::DOUBLE:
@@ -362,6 +367,8 @@ static UpdateSegment::fetch_committed_range_function_t GetFetchCommittedRangeFun
 		return TemplatedFetchCommittedRange<hugeint_t>;
 	case PhysicalType::UINT128:
 		return TemplatedFetchCommittedRange<uhugeint_t>;
+	case PhysicalType::BFLOAT:
+		return TemplatedFetchCommittedRange<std::bfloat16_t>;
 	case PhysicalType::FLOAT:
 		return TemplatedFetchCommittedRange<float>;
 	case PhysicalType::DOUBLE:
@@ -468,6 +475,8 @@ static UpdateSegment::fetch_row_function_t GetFetchRowFunction(PhysicalType type
 		return TemplatedFetchRow<hugeint_t>;
 	case PhysicalType::UINT128:
 		return TemplatedFetchRow<uhugeint_t>;
+	case PhysicalType::BFLOAT:
+		return TemplatedFetchRow<std::bfloat16_t>;
 	case PhysicalType::FLOAT:
 		return TemplatedFetchRow<float>;
 	case PhysicalType::DOUBLE:
@@ -538,6 +547,8 @@ static UpdateSegment::rollback_update_function_t GetRollbackUpdateFunction(Physi
 		return RollbackUpdate<hugeint_t>;
 	case PhysicalType::UINT128:
 		return RollbackUpdate<uhugeint_t>;
+	case PhysicalType::BFLOAT:
+		return RollbackUpdate<std::bfloat16_t>;
 	case PhysicalType::FLOAT:
 		return RollbackUpdate<float>;
 	case PhysicalType::DOUBLE:
@@ -743,6 +754,8 @@ static UpdateSegment::initialize_update_function_t GetInitializeUpdateFunction(P
 		return InitializeUpdateData<hugeint_t>;
 	case PhysicalType::UINT128:
 		return InitializeUpdateData<uhugeint_t>;
+	case PhysicalType::BFLOAT:
+		return InitializeUpdateData<std::bfloat16_t>;
 	case PhysicalType::FLOAT:
 		return InitializeUpdateData<float>;
 	case PhysicalType::DOUBLE:
@@ -954,6 +967,8 @@ static UpdateSegment::merge_update_function_t GetMergeUpdateFunction(PhysicalTyp
 		return MergeUpdateLoop<hugeint_t>;
 	case PhysicalType::UINT128:
 		return MergeUpdateLoop<uhugeint_t>;
+	case PhysicalType::BFLOAT:
+		return MergeUpdateLoop<std::bfloat16_t>;
 	case PhysicalType::FLOAT:
 		return MergeUpdateLoop<float>;
 	case PhysicalType::DOUBLE:
@@ -1070,6 +1085,8 @@ UpdateSegment::statistics_update_function_t GetStatisticsUpdateFunction(Physical
 		return TemplatedUpdateNumericStatistics<hugeint_t>;
 	case PhysicalType::UINT128:
 		return TemplatedUpdateNumericStatistics<uhugeint_t>;
+	case PhysicalType::BFLOAT:
+		return TemplatedUpdateNumericStatistics<std::bfloat16_t>;
 	case PhysicalType::FLOAT:
 		return TemplatedUpdateNumericStatistics<float>;
 	case PhysicalType::DOUBLE:

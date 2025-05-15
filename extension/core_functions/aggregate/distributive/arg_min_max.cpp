@@ -10,6 +10,8 @@
 #include "duckdb/function/create_sort_key.hpp"
 #include "duckdb/function/aggregate/minmax_n_helpers.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct ArgMinMaxStateBase {
@@ -642,6 +644,9 @@ static void SpecializeArgMinMaxNFunction(PhysicalType arg_type, AggregateFunctio
 	case PhysicalType::INT64:
 		SpecializeArgMinMaxNFunction<VAL_TYPE, MinMaxFixedValue<int64_t>, COMPARATOR>(function);
 		break;
+	case PhysicalType::BFLOAT:
+		SpecializeArgMinMaxNFunction<VAL_TYPE, MinMaxFixedValue<std::bfloat16_t>, COMPARATOR>(function);
+		break;
 	case PhysicalType::FLOAT:
 		SpecializeArgMinMaxNFunction<VAL_TYPE, MinMaxFixedValue<float>, COMPARATOR>(function);
 		break;
@@ -667,6 +672,9 @@ static void SpecializeArgMinMaxNFunction(PhysicalType val_type, PhysicalType arg
 		break;
 	case PhysicalType::INT64:
 		SpecializeArgMinMaxNFunction<MinMaxFixedValue<int64_t>, COMPARATOR>(arg_type, function);
+		break;
+	case PhysicalType::BFLOAT:
+		SpecializeArgMinMaxNFunction<MinMaxFixedValue<std::bfloat16_t>, COMPARATOR>(arg_type, function);
 		break;
 	case PhysicalType::FLOAT:
 		SpecializeArgMinMaxNFunction<MinMaxFixedValue<float>, COMPARATOR>(arg_type, function);

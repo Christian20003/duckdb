@@ -3,6 +3,8 @@
 #include "duckdb/function/window/window_boundaries_state.hpp"
 #include "duckdb/planner/expression/bound_window_expression.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //===--------------------------------------------------------------------===//
@@ -276,6 +278,9 @@ static idx_t FindRangeBound(WindowCursor &range_lo, WindowCursor &range_hi, cons
 	case PhysicalType::UINT128:
 		return FindTypedRangeBound<uhugeint_t, OP, FROM>(range_lo, range_hi, order_begin, order_end, range, boundary,
 		                                                 chunk_idx, prev);
+	case PhysicalType::BFLOAT:
+		return FindTypedRangeBound<std::bfloat16_t, OP, FROM>(range_lo, range_hi, order_begin, order_end, range,
+		                                                      boundary, chunk_idx, prev);
 	case PhysicalType::FLOAT:
 		return FindTypedRangeBound<float, OP, FROM>(range_lo, range_hi, order_begin, order_end, range, boundary,
 		                                            chunk_idx, prev);

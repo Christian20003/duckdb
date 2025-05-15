@@ -2,6 +2,8 @@
 #include "duckdb/common/numeric_utils.hpp"
 #include "duckdb/common/uhugeint.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 // forward declarations
@@ -607,6 +609,9 @@ void GetSegmentDataFunctions(ListSegmentFunctions &functions, const LogicalType 
 		break;
 	case PhysicalType::UINT64:
 		SegmentPrimitiveFunction<uint64_t>(functions);
+		break;
+	case PhysicalType::BFLOAT:
+		SegmentPrimitiveFunction<std::bfloat16_t>(functions);
 		break;
 	case PhysicalType::FLOAT:
 		SegmentPrimitiveFunction<float>(functions);
