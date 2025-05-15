@@ -9,6 +9,8 @@
 #include "duckdb/function/scalar/nested_functions.hpp"
 #include "duckdb/parser/query_error_context.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct ListValueAssign {
@@ -112,6 +114,9 @@ static void ListValueFunction(DataChunk &args, ExpressionState &state, Vector &r
 		break;
 	case PhysicalType::UINT128:
 		TemplatedListValueFunction<uhugeint_t>(args, result);
+		break;
+	case PhysicalType::BFLOAT:
+		TemplatedListValueFunction<std::bfloat16_t>(args, result);
 		break;
 	case PhysicalType::FLOAT:
 		TemplatedListValueFunction<float>(args, result);

@@ -150,6 +150,7 @@ idx_t ExpressionHeuristics::ExpressionCost(PhysicalType return_type, idx_t multi
 	switch (return_type) {
 	case PhysicalType::VARCHAR:
 		return 5 * multiplier;
+	case PhysicalType::BFLOAT:
 	case PhysicalType::FLOAT:
 	case PhysicalType::DOUBLE:
 		return 2 * multiplier;

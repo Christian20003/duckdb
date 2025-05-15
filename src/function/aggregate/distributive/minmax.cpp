@@ -13,6 +13,8 @@
 #include "duckdb/planner/expression/bound_comparison_expression.hpp"
 #include "duckdb/planner/expression_binder.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 template <class T>
@@ -46,6 +48,8 @@ static AggregateFunction GetUnaryAggregate(LogicalType type) {
 		return AggregateFunction::UnaryAggregate<MinMaxState<hugeint_t>, hugeint_t, hugeint_t, OP>(type, type);
 	case PhysicalType::UINT128:
 		return AggregateFunction::UnaryAggregate<MinMaxState<uhugeint_t>, uhugeint_t, uhugeint_t, OP>(type, type);
+	case PhysicalType::BFLOAT:
+		return AggregateFunction::UnaryAggregate<MinMaxState<std::bfloat16_t>, std::bfloat16_t, std::bfloat16_t, OP>(type, type);
 	case PhysicalType::FLOAT:
 		return AggregateFunction::UnaryAggregate<MinMaxState<float>, float, float, OP>(type, type);
 	case PhysicalType::DOUBLE:
@@ -498,6 +502,9 @@ static void SpecializeMinMaxNFunction(PhysicalType arg_type, AggregateFunction &
 		break;
 	case PhysicalType::INT64:
 		SpecializeMinMaxNFunction<MinMaxFixedValue<int64_t>, COMPARATOR>(function);
+		break;
+	case PhysicalType::BFLOAT:
+		SpecializeMinMaxNFunction<MinMaxFixedValue<std::bfloat16_t>, COMPARATOR>(function);
 		break;
 	case PhysicalType::FLOAT:
 		SpecializeMinMaxNFunction<MinMaxFixedValue<float>, COMPARATOR>(function);

@@ -1,5 +1,7 @@
 #include "duckdb/execution/index/art/art_key.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 //===--------------------------------------------------------------------===//
@@ -94,6 +96,8 @@ ARTKey ARTKey::CreateKey(ArenaAllocator &allocator, PhysicalType type, Value &va
 		return ARTKey::CreateARTKey<hugeint_t>(allocator, value);
 	case PhysicalType::UINT128:
 		return ARTKey::CreateARTKey<uhugeint_t>(allocator, value);
+	case PhysicalType::BFLOAT:
+		return ARTKey::CreateARTKey<std::bfloat16_t>(allocator, value);
 	case PhysicalType::FLOAT:
 		return ARTKey::CreateARTKey<float>(allocator, value);
 	case PhysicalType::DOUBLE:

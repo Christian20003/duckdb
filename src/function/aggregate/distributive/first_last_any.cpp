@@ -5,6 +5,8 @@
 #include "duckdb/function/create_sort_key.hpp"
 #include "duckdb/planner/expression.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 template <class T>
@@ -283,6 +285,8 @@ static AggregateFunction GetFirstFunction(const LogicalType &type) {
 		return GetFirstAggregateTemplated<hugeint_t, LAST, SKIP_NULLS>(type);
 	case PhysicalType::UINT128:
 		return GetFirstAggregateTemplated<uhugeint_t, LAST, SKIP_NULLS>(type);
+	case PhysicalType::BFLOAT:
+		return GetFirstAggregateTemplated<std::bfloat16_t, LAST, SKIP_NULLS>(type);
 	case PhysicalType::FLOAT:
 		return GetFirstAggregateTemplated<float, LAST, SKIP_NULLS>(type);
 	case PhysicalType::DOUBLE:

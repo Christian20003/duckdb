@@ -13,6 +13,8 @@
 #include "duckdb/function/create_sort_key.hpp"
 #include "duckdb/common/owning_string_map.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct ListAggregatesLocalState : public FunctionLocalState {
@@ -340,6 +342,10 @@ static void ListAggregatesFunction(DataChunk &args, ExpressionState &state, Vect
 			break;
 		case PhysicalType::INT64:
 			FUNCTION_FUNCTOR::template ListExecuteFunction<FinalizeValueFunctor, int64_t>(
+			    result, state_vector.state_vector, count);
+			break;
+		case PhysicalType::BFLOAT:
+			FUNCTION_FUNCTOR::template ListExecuteFunction<FinalizeValueFunctor, std::bfloat16_t>(
 			    result, state_vector.state_vector, count);
 			break;
 		case PhysicalType::FLOAT:

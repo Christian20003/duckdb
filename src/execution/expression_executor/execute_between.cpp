@@ -5,6 +5,8 @@
 #include "duckdb/common/operator/comparison_operators.hpp"
 #include "duckdb/common/vector_operations/ternary_executor.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 #ifndef DUCKDB_SMALLER_BINARY
@@ -71,6 +73,10 @@ static idx_t BetweenLoopTypeSwitch(Vector &input, Vector &lower, Vector &upper, 
 	case PhysicalType::UINT128:
 		return TernaryExecutor::Select<uhugeint_t, uhugeint_t, uhugeint_t, OP>(input, lower, upper, sel, count,
 		                                                                       true_sel, false_sel);
+	case PhysicalType::BFLOAT:
+		return TernaryExecutor::Select<std::bfloat16_t, std::bfloat16_t, std::bfloat16_t, OP>(input, lower, upper, sel,
+		                                                                                         count, true_sel,
+		                                                                                         false_sel);	
 	case PhysicalType::FLOAT:
 		return TernaryExecutor::Select<float, float, float, OP>(input, lower, upper, sel, count, true_sel, false_sel);
 	case PhysicalType::DOUBLE:

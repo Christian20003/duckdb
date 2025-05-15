@@ -7,6 +7,7 @@
 #include "duckdb/storage/table/scan_state.hpp"
 
 #include <functional>
+#include <stdfloat>
 
 namespace duckdb {
 
@@ -603,6 +604,8 @@ CompressionFunction RLEFun::GetFunction(PhysicalType type) {
 		return GetRLEFunction<uint32_t>(type);
 	case PhysicalType::UINT64:
 		return GetRLEFunction<uint64_t>(type);
+	case PhysicalType::BFLOAT:
+		return GetRLEFunction<std::bfloat16_t>(type);
 	case PhysicalType::FLOAT:
 		return GetRLEFunction<float>(type);
 	case PhysicalType::DOUBLE:
@@ -627,6 +630,7 @@ bool RLEFun::TypeIsSupported(const PhysicalType physical_type) {
 	case PhysicalType::UINT32:
 	case PhysicalType::UINT64:
 	case PhysicalType::UINT128:
+	case PhysicalType::BFLOAT:
 	case PhysicalType::FLOAT:
 	case PhysicalType::DOUBLE:
 	case PhysicalType::LIST:

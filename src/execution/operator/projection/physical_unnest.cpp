@@ -7,6 +7,8 @@
 #include "duckdb/planner/expression/bound_reference_expression.hpp"
 #include "duckdb/planner/expression/bound_unnest_expression.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 class UnnestOperatorState : public OperatorState {
@@ -172,6 +174,9 @@ static void UnnestVector(UnifiedVectorFormat &child_vector_data, Vector &child_v
 		break;
 	case PhysicalType::UINT128:
 		TemplatedUnnest<uhugeint_t>(child_vector_data, start, end, result);
+		break;
+	case PhysicalType::BFLOAT:
+		TemplatedUnnest<std::bfloat16_t>(child_vector_data, start, end, result);
 		break;
 	case PhysicalType::FLOAT:
 		TemplatedUnnest<float>(child_vector_data, start, end, result);

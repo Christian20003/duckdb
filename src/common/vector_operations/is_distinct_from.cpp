@@ -2,6 +2,8 @@
 #include "duckdb/common/vector_operations/vector_operations.hpp"
 #include "duckdb/common/operator/comparison_operators.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct DistinctBinaryLambdaWrapper {
@@ -1049,6 +1051,9 @@ static void ExecuteDistinct(Vector &left, Vector &right, Vector &result, idx_t c
 	case PhysicalType::UINT128:
 		TemplatedDistinctExecute<uhugeint_t, OP>(left, right, result, count);
 		break;
+	case PhysicalType::BFLOAT:
+		TemplatedDistinctExecute<std::bfloat16_t, OP>(left, right, result, count);
+		break;
 	case PhysicalType::FLOAT:
 		TemplatedDistinctExecute<float, OP>(left, right, result, count);
 		break;
@@ -1109,6 +1114,9 @@ static idx_t TemplatedDistinctSelectOperation(Vector &left, Vector &right, optio
 	case PhysicalType::UINT128:
 		return DistinctSelect<uhugeint_t, uhugeint_t, OP>(left, right, sel.get(), count, true_sel.get(),
 		                                                  false_sel.get(), null_mask);
+	case PhysicalType::BFLOAT:
+		return DistinctSelect<std::bfloat16_t, std::bfloat16_t, OP>(left, right, sel.get(), count, true_sel.get(),
+		                                                            false_sel.get(), null_mask);
 	case PhysicalType::FLOAT:
 		return DistinctSelect<float, float, OP>(left, right, sel.get(), count, true_sel.get(), false_sel.get(),
 		                                        null_mask);

@@ -116,6 +116,7 @@ static unique_ptr<BaseStatistics> StatisticsNumericCastSwitch(const BaseStatisti
 	case PhysicalType::INT32:
 	case PhysicalType::INT64:
 	case PhysicalType::INT128:
+	case PhysicalType::BFLOAT:
 	case PhysicalType::FLOAT:
 	case PhysicalType::DOUBLE:
 		return StatisticsOperationsNumericNumericCast(input, target);
@@ -137,6 +138,7 @@ unique_ptr<BaseStatistics> StatisticsPropagator::PropagateExpression(BoundCastEx
 	case PhysicalType::INT32:
 	case PhysicalType::INT64:
 	case PhysicalType::INT128:
+	case PhysicalType::BFLOAT:
 	case PhysicalType::FLOAT:
 	case PhysicalType::DOUBLE:
 		result_stats = StatisticsNumericCastSwitch(*child_stats, cast.return_type);

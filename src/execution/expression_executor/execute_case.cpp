@@ -3,6 +3,8 @@
 #include "duckdb/execution/expression_executor.hpp"
 #include "duckdb/planner/expression/bound_case_expression.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct CaseExpressionState : public ExpressionState {
@@ -174,6 +176,9 @@ void ExpressionExecutor::FillSwitch(Vector &vector, Vector &result, const Select
 		break;
 	case PhysicalType::UINT128:
 		TemplatedFillLoop<uhugeint_t>(vector, result, sel, count);
+		break;
+	case PhysicalType::BFLOAT:
+		TemplatedFillLoop<std::bfloat16_t>(vector, result, sel, count);
 		break;
 	case PhysicalType::FLOAT:
 		TemplatedFillLoop<float>(vector, result, sel, count);

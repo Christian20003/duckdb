@@ -7,6 +7,8 @@
 #include "duckdb/planner/expression/bound_function_expression.hpp"
 #include "duckdb/planner/expression_binder.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct CreateSortKeyBindData : public FunctionData {
@@ -416,6 +418,9 @@ static void GetSortKeyLengthRecursive(SortKeyVectorData &vector_data, SortKeyChu
 	case PhysicalType::INT64:
 		TemplatedGetSortKeyLength<SortKeyConstantOperator<int64_t>>(vector_data, chunk, result);
 		break;
+	case PhysicalType::BFLOAT:
+		TemplatedGetSortKeyLength<SortKeyConstantOperator<std::bfloat16_t>>(vector_data, chunk, result);
+		break;
 	case PhysicalType::FLOAT:
 		TemplatedGetSortKeyLength<SortKeyConstantOperator<float>>(vector_data, chunk, result);
 		break;
@@ -606,6 +611,9 @@ static void ConstructSortKeyRecursive(SortKeyVectorData &vector_data, SortKeyChu
 		break;
 	case PhysicalType::INT64:
 		TemplatedConstructSortKey<SortKeyConstantOperator<int64_t>>(vector_data, chunk, info);
+		break;
+	case PhysicalType::BFLOAT:
+		TemplatedConstructSortKey<SortKeyConstantOperator<std::bfloat16_t>>(vector_data, chunk, info);
 		break;
 	case PhysicalType::FLOAT:
 		TemplatedConstructSortKey<SortKeyConstantOperator<float>>(vector_data, chunk, info);
@@ -971,6 +979,9 @@ void DecodeSortKeyRecursive(DecodeSortKeyData &decode_data, DecodeSortKeyVectorD
 		break;
 	case PhysicalType::INT64:
 		TemplatedDecodeSortKey<SortKeyConstantOperator<int64_t>>(decode_data, vector_data, result, result_idx);
+		break;
+	case PhysicalType::BFLOAT:
+		TemplatedDecodeSortKey<SortKeyConstantOperator<std::bfloat16_t>>(decode_data, vector_data, result, result_idx);
 		break;
 	case PhysicalType::FLOAT:
 		TemplatedDecodeSortKey<SortKeyConstantOperator<float>>(decode_data, vector_data, result, result_idx);

@@ -22,6 +22,8 @@
 #include "duckdb/storage/table/scan_state.hpp"
 #include "duckdb/storage/table_io_manager.hpp"
 
+#include <stdfloat>
+
 namespace duckdb {
 
 struct ARTIndexScanState : public IndexScanState {
@@ -61,6 +63,7 @@ ART::ART(const string &name, const IndexConstraintType index_constraint_type, co
 		case PhysicalType::UINT32:
 		case PhysicalType::UINT64:
 		case PhysicalType::UINT128:
+		case PhysicalType::BFLOAT:
 		case PhysicalType::FLOAT:
 		case PhysicalType::DOUBLE:
 		case PhysicalType::VARCHAR:
@@ -319,6 +322,9 @@ void GenerateKeysInternal(ArenaAllocator &allocator, DataChunk &input, unsafe_ve
 	case PhysicalType::UINT128:
 		TemplatedGenerateKeys<uhugeint_t, IS_NOT_NULL>(allocator, input.data[0], input.size(), keys);
 		break;
+	case PhysicalType::BFLOAT:
+		TemplatedGenerateKeys<std::bfloat16_t, IS_NOT_NULL>(allocator, input.data[0], input.size(), keys);
+		break;
 	case PhysicalType::FLOAT:
 		TemplatedGenerateKeys<float, IS_NOT_NULL>(allocator, input.data[0], input.size(), keys);
 		break;
@@ -367,6 +373,9 @@ void GenerateKeysInternal(ArenaAllocator &allocator, DataChunk &input, unsafe_ve
 			break;
 		case PhysicalType::UINT128:
 			ConcatenateKeys<uhugeint_t, IS_NOT_NULL>(allocator, input.data[i], input.size(), keys);
+			break;
+		case PhysicalType::BFLOAT:
+			ConcatenateKeys<std::bfloat16_t, IS_NOT_NULL>(allocator, input.data[i], input.size(), keys);
 			break;
 		case PhysicalType::FLOAT:
 			ConcatenateKeys<float, IS_NOT_NULL>(allocator, input.data[i], input.size(), keys);

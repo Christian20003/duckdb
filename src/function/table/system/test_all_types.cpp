@@ -41,6 +41,7 @@ vector<TestType> TestAllTypesFun::GetTestTypes(bool use_large_enum) {
 	result.emplace_back(LogicalType::TIMESTAMP_NS, "timestamp_ns");
 	result.emplace_back(LogicalType::TIME_TZ, "time_tz");
 	result.emplace_back(LogicalType::TIMESTAMP_TZ, "timestamp_tz");
+	result.emplace_back(LogicalType::BFLOAT, "bfloat");
 	result.emplace_back(LogicalType::FLOAT, "float");
 	result.emplace_back(LogicalType::DOUBLE, "double");
 	result.emplace_back(LogicalType::DECIMAL(4, 1), "dec_4_1");
