@@ -157,4 +157,15 @@ ScalarFunctionSet ListArithMulFun::GetFunctions() {
 	}
 	return set;
 }
+
+ScalarFunctionSet ListArithDivFun::GetFunctions() {
+	ScalarFunctionSet set("list_div");
+	for (auto &type : LogicalType::Real()) {
+		AddListArithFunction<DivOperator>(set, type);
+	}
+	for (auto &func : set.functions) {
+		BaseScalarFunction::SetReturnsError(func);
+	}
+	return set;
+}
 }

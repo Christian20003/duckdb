@@ -233,6 +233,7 @@ static const StaticFunctionDefinition core_functions[] = {
 	DUCKDB_SCALAR_FUNCTION_SET(ListArithAddFun),
 	DUCKDB_SCALAR_FUNCTION_SET(ListArithSubFun),
 	DUCKDB_SCALAR_FUNCTION_SET(ListArithMulFun),
+	DUCKDB_SCALAR_FUNCTION_SET(ListArithDivFun),
 	DUCKDB_SCALAR_FUNCTION_SET(ListCosineDistanceFun),
 	DUCKDB_SCALAR_FUNCTION_SET(ListCosineSimilarityFun),
 	DUCKDB_SCALAR_FUNCTION_SET(ListDistanceFun),

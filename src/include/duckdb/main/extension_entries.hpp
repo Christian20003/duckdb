@@ -396,6 +396,7 @@ static constexpr ExtensionFunctionEntry EXTENSION_FUNCTIONS[] = {
     {"list_distance", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_distinct", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_dot_product", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
+    {"list_div", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_filter", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_grade_up", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_has_all", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},

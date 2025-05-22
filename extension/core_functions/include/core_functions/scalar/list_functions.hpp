@@ -288,6 +288,15 @@ struct ListArithMulFun {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListArithDivFun {
+	static constexpr const char *Name = "list_div";
+	static constexpr const char *Parameters = "list1,list2";
+	static constexpr const char *Description = "Element-wise division of two lists";
+	static constexpr const char *Example = "list_div([1, 2, 3], [4, 5, 6])";
+
+	static ScalarFunctionSet GetFunctions();
+};
+
 struct ListCosineDistanceFun {
 	static constexpr const char *Name = "list_cosine_distance";
 	static constexpr const char *Parameters = "list1,list2";
