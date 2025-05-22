@@ -260,6 +260,13 @@
         "description": "missing data"
     },
     {
+        "id": "BFLOAT",
+        "names": [
+            "bfloat"
+        ],
+        "description": "half precision brain floating-point number (2 bytes)"
+    },
+    {
         "id": "FLOAT",
         "names": [
             "float",
