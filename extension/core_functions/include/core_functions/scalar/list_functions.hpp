@@ -279,6 +279,15 @@ struct ListArithSubFun {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListArithMulFun {
+	static constexpr const char *Name = "list_mul";
+	static constexpr const char *Parameters = "list1,list2";
+	static constexpr const char *Description = "Element-wise multiplication of two lists";
+	static constexpr const char *Example = "list_mul([1, 2, 3], [4, 5, 6])";
+
+	static ScalarFunctionSet GetFunctions();
+};
+
 struct ListCosineDistanceFun {
 	static constexpr const char *Name = "list_cosine_distance";
 	static constexpr const char *Parameters = "list1,list2";

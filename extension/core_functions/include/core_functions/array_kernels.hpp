@@ -42,6 +42,23 @@ struct SubOperator {
 	}
 };
 
+struct MulOperator {
+	static constexpr bool ALLOW_EMPTY = true;
+
+	template <class TYPE>
+	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t count) {
+		auto lhs_ptr = lhs_data;
+		auto rhs_ptr = rhs_data;
+		auto result_ptr = result_data;
+
+		for (idx_t i = 0; i < count; i++) {
+			const auto x = *lhs_ptr++;
+			const auto y = *rhs_ptr++;
+			*result_ptr++ = x * y;
+		}
+	}
+};
+
 //-------------------------------------------------------------------------
 // Folding Operations
 //-------------------------------------------------------------------------

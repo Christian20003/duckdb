@@ -146,4 +146,15 @@ ScalarFunctionSet ListArithSubFun::GetFunctions() {
 	}
 	return set;
 }
+
+ScalarFunctionSet ListArithMulFun::GetFunctions() {
+	ScalarFunctionSet set("list_mul");
+	for (auto &type : LogicalType::Real()) {
+		AddListArithFunction<MulOperator>(set, type);
+	}
+	for (auto &func : set.functions) {
+		BaseScalarFunction::SetReturnsError(func);
+	}
+	return set;
+}
 }
