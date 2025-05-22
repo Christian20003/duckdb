@@ -55,7 +55,6 @@ static void ListGenericArith(DataChunk &args, ExpressionState &state, Vector &re
     // Get the actual data as shared pointer to the first element
     auto lhs_data = FlatVector::GetData<TYPE>(*lhs_child);
     auto rhs_data = FlatVector::GetData<TYPE>(*rhs_child);
-    auto result_data = FlatVector::GetData<TYPE>(*result_child);
     
     auto current_size = ListVector::GetListSize(result);
     
@@ -74,10 +73,13 @@ static void ListGenericArith(DataChunk &args, ExpressionState &state, Vector &re
                     "%s: last list dimensions must be equal, got left length '%d' and right length '%d'", func_name,
                     lhs_count, rhs_count);
             }
-            // Reserve space for the result vector and copy all elements from the left vector into result
+            // Reserve space for the result vector
             idx_t new_size = current_size + left.length;
             ListVector::Reserve(result, new_size);
+            // TODO: Maybe find better solution than copy
+            // Is currently needed, to ensure that sublists have a valid offset
             VectorOperations::Copy(ListVector::GetEntry(lhs_vec), ListVector::GetEntry(result), left.offset + left.length, left.offset, current_size);
+            auto result_data = FlatVector::GetData<TYPE>(*result_child);
             
             // Specify metadata for the result vector
             list_entry_t result_list;
