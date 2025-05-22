@@ -261,6 +261,15 @@ struct ListRangeFun {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListArithAddFun {
+	static constexpr const char *Name = "list_add";
+	static constexpr const char *Parameters = "list1,list2";
+	static constexpr const char *Description = "Element-wise addition of two lists";
+	static constexpr const char *Example = "list_add([1, 2, 3], [4, 5, 6])";
+
+	static ScalarFunctionSet GetFunctions();
+};
+
 struct ListCosineDistanceFun {
 	static constexpr const char *Name = "list_cosine_distance";
 	static constexpr const char *Parameters = "list1,list2";

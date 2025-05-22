@@ -387,6 +387,7 @@ static constexpr ExtensionFunctionEntry EXTENSION_FUNCTIONS[] = {
     {"levenshtein", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"lgamma", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list", "core_functions", CatalogType::AGGREGATE_FUNCTION_ENTRY},
+    {"list_add", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_aggr", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_aggregate", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_apply", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
