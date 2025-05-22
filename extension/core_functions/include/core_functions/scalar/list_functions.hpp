@@ -270,6 +270,15 @@ struct ListArithAddFun {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListArithSubFun {
+	static constexpr const char *Name = "list_sub";
+	static constexpr const char *Parameters = "list1,list2";
+	static constexpr const char *Description = "Element-wise subtraction of two lists";
+	static constexpr const char *Example = "list_sub([1, 2, 3], [4, 5, 6])";
+
+	static ScalarFunctionSet GetFunctions();
+};
+
 struct ListCosineDistanceFun {
 	static constexpr const char *Name = "list_cosine_distance";
 	static constexpr const char *Parameters = "list1,list2";

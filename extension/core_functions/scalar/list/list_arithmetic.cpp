@@ -133,4 +133,15 @@ ScalarFunctionSet ListArithAddFun::GetFunctions() {
 	}
 	return set;
 }
+
+ScalarFunctionSet ListArithSubFun::GetFunctions() {
+	ScalarFunctionSet set("list_sub");
+	for (auto &type : LogicalType::Real()) {
+		AddListArithFunction<SubOperator>(set, type);
+	}
+	for (auto &func : set.functions) {
+		BaseScalarFunction::SetReturnsError(func);
+	}
+	return set;
+}
 }

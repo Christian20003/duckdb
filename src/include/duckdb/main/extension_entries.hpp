@@ -408,6 +408,7 @@ static constexpr ExtensionFunctionEntry EXTENSION_FUNCTIONS[] = {
     {"list_reverse_sort", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_slice", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_sort", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
+    {"list_sub", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_transform", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_unique", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_value", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
