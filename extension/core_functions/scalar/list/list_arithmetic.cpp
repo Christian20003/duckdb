@@ -7,7 +7,83 @@
 namespace duckdb {
 
 template <class TYPE, class OP>
-static void ListGenericArith(DataChunk &args, ExpressionState &state, Vector &result) {
+static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vector &result) {
+    // Extract function name
+    const auto &lstate = state.Cast<ExecuteFunctionState>();
+    const auto &expr = lstate.expr.Cast<BoundFunctionExpression>();
+    const auto &func_name = expr.function.name;
+
+    // Get number of parameters
+    auto count = args.size();
+
+    // Get the parameters
+    duckdb::Vector &vector = args.data[0];
+    duckdb::Vector &scalar = args.data[1];
+
+    // Get size of the list vector and its content
+    duckdb::idx_t size = ListVector::GetListSize(vector);
+    duckdb::Vector *child = &ListVector::GetEntry(vector);
+    auto *result_child = &ListVector::GetEntry(result);
+
+    // If the list vector contain nested list vectors, select their children until reaching last level
+    while(child->GetType().id() == LogicalTypeId::LIST) {
+        size = ListVector::GetListSize(*child);
+        child = &ListVector::GetEntry(*child);
+        result_child = &ListVector::GetEntry(*result_child);
+    }
+    
+    // Decompress the list vector (with single values) and flatten them
+    child->Flatten(size);
+
+    D_ASSERT(child->GetVectorType() == VectorType::FLAT_VECTOR);
+
+    // NULL values are not allowed
+    if (!FlatVector::Validity(*child).CheckAllValid(size)) {
+        throw InvalidInputException("%s: left argument can not contain NULL values", func_name);
+    }
+
+    // Get the actual data as shared pointer to the first element
+    auto data = FlatVector::GetData<TYPE>(*child);
+    
+    auto current_size = ListVector::GetListSize(result);
+    
+    // Function that will be executed for each row
+    BinaryExecutor::ExecuteWithNulls<list_entry_t, TYPE, list_entry_t>(
+        vector, scalar, result, count,
+        [&](const list_entry_t &list, TYPE scalar, ValidityMask &mask, idx_t row_idx) {
+            // Reserve space for the result vector
+            idx_t new_size = current_size + list.length;
+            ListVector::Reserve(result, new_size);
+            // TODO: Maybe find better solution than copy
+            // Is currently needed, to ensure that sublists have a valid offset
+            VectorOperations::Copy(ListVector::GetEntry(vector), ListVector::GetEntry(result), list.offset + list.length, list.offset, current_size);
+            auto result_data = FlatVector::GetData<TYPE>(*result_child);
+            
+            // Specify metadata for the result vector
+            list_entry_t result_list;
+            result_list.offset = current_size;
+            result_list.length = list.length;
+            current_size += list.length;
+            
+            // If the parameter vectors are empty, set the result vector to NULL
+            if (!OP::ALLOW_EMPTY && list.length == 0) {
+                mask.SetInvalid(row_idx);
+                return result_list;
+            }
+
+            // Perform the actual addition operation 
+            OP::Operation(data + list.offset, &scalar, result_data + result_list.offset, size, true);
+            return result_list;
+        });
+
+    if (args.AllConstant()) {
+        result.SetVectorType(VectorType::CONSTANT_VECTOR);
+    }
+    ListVector::SetListSize(result, current_size);
+}
+
+template <class TYPE, class OP>
+static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector &result) {
     // Extract function name
     const auto &lstate = state.Cast<ExecuteFunctionState>();
     const auto &expr = lstate.expr.Cast<BoundFunctionExpression>();
@@ -112,14 +188,20 @@ static void AddListArithFunction(ScalarFunctionSet &set, const LogicalType &type
 	const auto list_single = LogicalType::LIST(type);
     const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
 	if (type.id() == LogicalTypeId::FLOAT) {
-		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArith<float, OP>));
-        set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArith<float, OP>));
+		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArithList<float, OP>));
+        set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArithList<float, OP>));
+        set.AddFunction(ScalarFunction({list_single, type}, list_single, ListGenericArithScalar<float, OP>));
+        set.AddFunction(ScalarFunction({list_double, type}, list_double, ListGenericArithScalar<float, OP>));
 	} else if (type.id() == LogicalTypeId::BFLOAT) {
-		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArith<std::bfloat16_t, OP>));
-        set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArith<std::bfloat16_t, OP>));
+		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArithList<std::bfloat16_t, OP>));
+        set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArithList<std::bfloat16_t, OP>));
+        set.AddFunction(ScalarFunction({list_single, type}, list_single, ListGenericArithScalar<std::bfloat16_t, OP>));
+        set.AddFunction(ScalarFunction({list_double, type}, list_double, ListGenericArithScalar<std::bfloat16_t, OP>));
 	} else if (type.id() == LogicalTypeId::DOUBLE) {
-		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArith<double, OP>));
-        set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArith<double, OP>));
+		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArithList<double, OP>));
+        set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArithList<double, OP>));
+        set.AddFunction(ScalarFunction({list_single, type}, list_single, ListGenericArithScalar<double, OP>));
+        set.AddFunction(ScalarFunction({list_double, type}, list_double, ListGenericArithScalar<double, OP>));
 	} else {
 		throw NotImplementedException("List function not implemented for type %s", type.ToString());
 	}
