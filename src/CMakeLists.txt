@@ -107,7 +107,8 @@ else()
       duckdb_skiplistlib
       duckdb_mbedtls
       duckdb_yyjson
-      duckdb_zstd)
+      duckdb_zstd
+      ${OPENBLAS_LIB})
 
   add_library(duckdb SHARED ${ALL_OBJECT_FILES})
 
