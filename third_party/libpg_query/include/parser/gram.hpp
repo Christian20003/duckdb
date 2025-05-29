@@ -1050,7 +1050,6 @@
 #define WITH_LA 759
 #define POSTFIXOP 760
 #define UMINUS 761
-#define BFLOAT 762
 
 
 

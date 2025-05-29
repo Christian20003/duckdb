@@ -403,6 +403,7 @@ static constexpr ExtensionFunctionEntry EXTENSION_FUNCTIONS[] = {
     {"list_has_any", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_inner_product", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_mul", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
+    {"list_mmul", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_negative_dot_product", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_negative_inner_product", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"list_pack", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},

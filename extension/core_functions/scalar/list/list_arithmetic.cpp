@@ -111,7 +111,6 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
         rhs_child = &ListVector::GetEntry(*rhs_child);
         result_child = &ListVector::GetEntry(*result_child);
     }
-    
     // Decompress the list vectors (with single values) and flatten them
     rhs_child->Flatten(rhs_count);
     lhs_child->Flatten(lhs_count);
@@ -179,6 +178,128 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
     }
     ListVector::SetListSize(result, current_size);
 }
+
+template <class TYPE>
+static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &result) {
+    // Extract function name
+    const auto &lstate = state.Cast<ExecuteFunctionState>();
+    const auto &expr = lstate.expr.Cast<BoundFunctionExpression>();
+    const auto &func_name = expr.function.name;
+
+    // Get number of parameters
+    auto count = args.size();
+
+    // Get parameters
+    auto &lhs_vec = args.data[0];
+    auto &rhs_vec = args.data[1];
+
+    // Get size of the list vectors and their content
+    auto left_outer_size = ListVector::GetListSize(lhs_vec);
+    auto right_outer_size = ListVector::GetListSize(rhs_vec);
+    duckdb::idx_t left_inner_size = -1;
+    duckdb::idx_t right_inner_size = -1;
+
+    auto *lhs_child = &ListVector::GetEntry(lhs_vec);
+    auto *rhs_child = &ListVector::GetEntry(rhs_vec);
+    auto *result_child = &ListVector::GetEntry(result);
+
+    // If the list vectors contain nested list vectors, select their children until reaching last level
+    while(lhs_child->GetType().id() == LogicalTypeId::LIST) {
+        left_inner_size = ListVector::GetListSize(*lhs_child);
+        right_inner_size = ListVector::GetListSize(*rhs_child);
+        lhs_child = &ListVector::GetEntry(*lhs_child);
+        rhs_child = &ListVector::GetEntry(*rhs_child);
+        result_child = &ListVector::GetEntry(*result_child);
+    }
+    
+    // Decompress the list vectors (with single values) and flatten them
+    rhs_child->Flatten(left_inner_size == -1 ? left_outer_size : left_inner_size);
+    lhs_child->Flatten(right_inner_size == -1 ? right_outer_size : right_inner_size);
+
+    D_ASSERT(lhs_child->GetVectorType() == VectorType::FLAT_VECTOR);
+    D_ASSERT(rhs_child->GetVectorType() == VectorType::FLAT_VECTOR);
+
+    // NULL values are not allowed
+    if (!FlatVector::Validity(*lhs_child).CheckAllValid(left_inner_size == -1 ? left_outer_size : left_inner_size)) {
+        throw InvalidInputException("%s: left argument can not contain NULL values", func_name);
+    }
+
+    if (!FlatVector::Validity(*rhs_child).CheckAllValid(right_inner_size == -1 ? right_outer_size : right_inner_size)) {
+        throw InvalidInputException("%s: right argument can not contain NULL values", func_name);
+    }
+
+    left_inner_size = left_inner_size == -1 ? 1 : left_inner_size;
+    right_inner_size = right_inner_size == -1 ? 1 : right_inner_size;
+
+    // Get the actual data as shared pointer to the first element
+    auto lhs_data = FlatVector::GetData<TYPE>(*lhs_child);
+    auto rhs_data = FlatVector::GetData<TYPE>(*rhs_child);
+    
+    auto current_size = ListVector::GetListSize(result);
+
+    auto tmp_vector = make_uniq<Vector>(lhs_child->GetType());
+    ListVector::Reserve(*tmp_vector, left_outer_size * right_inner_size);
+    ListVector::SetListSize(*tmp_vector, left_outer_size * right_inner_size);
+    auto tmp_data = ListVector::GetData(*tmp_vector);
+    tmp_data->offset = 0;
+    tmp_data->length = left_outer_size * right_inner_size;
+    
+    // Function that will be executed for each row
+    BinaryExecutor::ExecuteWithNulls<list_entry_t, list_entry_t, list_entry_t>(
+        lhs_vec, rhs_vec, result, count,
+        [&](const list_entry_t &left, const list_entry_t &right, ValidityMask &mask, idx_t row_idx) {
+            // Check if the dimensions are equal
+            auto rowsA = left_outer_size;
+            auto colsA = left_inner_size != 1 ? left_inner_size / left_outer_size : left_inner_size;
+            auto rowsB = right_outer_size;
+            auto colsB = right_inner_size != 1 ? right_inner_size / right_outer_size : right_inner_size;
+            if (colsA != rowsB) {
+                throw InvalidInputException(
+                    "%s: invalid dimension structure for matrix multiplication, got '%d'x'%d' and '%d'x'%d'", func_name,
+                    rowsA, colsA, rowsB, colsB);
+            }
+            // Reserve space for the result vector
+            idx_t new_size = current_size + left.length;
+            ListVector::Reserve(result, new_size);
+            // TODO: Maybe find better solution than copy
+            // Is currently needed, to ensure that sublists have a valid offset
+            if (rowsA < rowsB) {
+                VectorOperations::Copy(ListVector::GetEntry(rhs_vec), ListVector::GetEntry(result), right.offset + right.length, right.offset, current_size);    
+            } else {
+                VectorOperations::Copy(ListVector::GetEntry(lhs_vec), ListVector::GetEntry(result), left.offset + left.length, left.offset, current_size);
+            }
+            auto result_data = FlatVector::GetData<TYPE>(*result_child);
+            
+            // Specify metadata for the result vector
+            list_entry_t result_list;
+            result_list.offset = current_size;
+            result_list.length = left.length;
+            current_size += left.length;
+            
+            // If the parameter vectors are empty, set the result vector to NULL
+            if (!MatrixMultiplicationOperator::ALLOW_EMPTY && left.length == 0) {
+                mask.SetInvalid(row_idx);
+                return result_list;
+            }
+
+            // Perform the actual addition operation
+            MatrixMultiplicationOperator::Operation(
+                lhs_data + left.offset, 
+                rhs_data + right.offset,
+                result_data + result_list.offset,
+                rowsA,
+                rowsB,
+                colsB
+            ); 
+            return result_list;
+        });
+
+    if (args.AllConstant()) {
+        result.SetVectorType(VectorType::CONSTANT_VECTOR);
+    }
+    ListVector::SetListSize(result, current_size);
+}
+
 //-------------------------------------------------------------------------
 // Function Registration
 //-------------------------------------------------------------------------
@@ -244,6 +365,32 @@ ScalarFunctionSet ListArithDivFun::GetFunctions() {
 	ScalarFunctionSet set("list_div");
 	for (auto &type : LogicalType::Real()) {
 		AddListArithFunction<DivOperator>(set, type);
+	}
+	for (auto &func : set.functions) {
+		BaseScalarFunction::SetReturnsError(func);
+	}
+	return set;
+}
+
+ScalarFunctionSet ListArithMMulFun::GetFunctions() {
+	ScalarFunctionSet set("list_mmul");
+	for (auto &type : LogicalType::Real()) {
+        const auto list_single = LogicalType::LIST(type);
+        const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
+        const auto metadataType = LogicalType::INTEGER;
+        if (type.id() == LogicalTypeId::FLOAT) {
+            set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListMatrixMul<float>));
+            set.AddFunction(ScalarFunction({list_double, list_single}, list_single, ListMatrixMul<float>));
+            set.AddFunction(ScalarFunction({list_single, list_double}, list_double, ListMatrixMul<float>));
+        } else if (type.id() == LogicalTypeId::BFLOAT) {
+            /* set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListMatrixMul<std::bfloat16_t>));
+            set.AddFunction(ScalarFunction({list_double, list_single}, list_single, ListMatrixMul<std::bfloat16_t>));
+            set.AddFunction(ScalarFunction({list_single, list_double}, list_double, ListMatrixMul<std::bfloat16_t>)); */
+        } else if (type.id() == LogicalTypeId::DOUBLE) {
+            set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListMatrixMul<double>));
+            set.AddFunction(ScalarFunction({list_double, list_single}, list_single, ListMatrixMul<double>));
+            set.AddFunction(ScalarFunction({list_single, list_double}, list_double, ListMatrixMul<double>));
+        }
 	}
 	for (auto &func : set.functions) {
 		BaseScalarFunction::SetReturnsError(func);

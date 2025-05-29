@@ -10,6 +10,44 @@ namespace duckdb {
 // Arithmetic Operations
 //-------------------------------------------------------------------------
 
+template <class TYPE>
+inline void Gemm(int rowsA, int columnsB, int rowsB, const TYPE *A, const TYPE *B, TYPE *C) {
+    static_assert(sizeof(TYPE) == 0, "Gemm not implemented for this type");
+}
+
+template <>
+inline void Gemm<double>(int rowsA, int columnsB, int rowsB, const double *A, const double *B, double *C) {
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, rowsA, columnsB, rowsB, 1.0, A, rowsB, B, columnsB, 0.0, C, columnsB);
+}
+
+template <>
+inline void Gemm<float>(int rowsA, int columnsB, int rowsB, const float *A, const float *B, float *C) {
+    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, rowsA, columnsB, rowsB, 1.0f, A, rowsB, B, columnsB, 0.0f, C, columnsB);
+}
+
+struct MatrixMultiplicationOperator {
+	static constexpr bool ALLOW_EMPTY = false;
+
+	template <class TYPE>
+	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const int rowsA, const int rowsB, const int columnsB) {
+		TYPE matrixA[rowsA * rowsB];
+		TYPE matrixB[rowsB * columnsB];
+		TYPE result[rowsA * columnsB] = {0.0};
+
+		for (idx_t i = 0; i < rowsA * rowsB; i++) {
+			matrixA[i] = *lhs_data++;
+		}
+		for (idx_t i = 0; i < rowsB * columnsB; i++) {
+			matrixB[i] = *rhs_data++;
+		}
+		Gemm<TYPE>(rowsA, columnsB, rowsB, matrixA, matrixB, result);
+
+		for (idx_t i = 0; i < rowsA * columnsB; i++) {
+			*result_data++ = result[i];
+		}
+	}
+};
+
 struct AddOperator {
 	static constexpr bool ALLOW_EMPTY = true;
 

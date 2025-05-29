@@ -288,6 +288,15 @@ struct ListArithMulFun {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListArithMMulFun {
+	static constexpr const char *Name = "list_mmul";
+	static constexpr const char *Parameters = "list1,list2";
+	static constexpr const char *Description = "Matrix-Multiplication with two lists";
+	static constexpr const char *Example = "list_mmul([[1, 2],[2, 2]], [4, 5])";
+
+	static ScalarFunctionSet GetFunctions();
+};
+
 struct ListArithDivFun {
 	static constexpr const char *Name = "list_div";
 	static constexpr const char *Parameters = "list1,list2";
