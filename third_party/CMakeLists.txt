@@ -14,7 +14,7 @@ if(NOT AMALGAMATION_BUILD)
   add_subdirectory(fsst)
   add_subdirectory(yyjson)
   add_subdirectory(zstd)
-  add_subdirectory(OpenBLAS/build)
+  add_subdirectory(OpenBLAS)
 endif()
 
 if(NOT WIN32

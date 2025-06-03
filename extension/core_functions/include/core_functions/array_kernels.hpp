@@ -3,46 +3,46 @@
 #include "duckdb/common/algorithm.hpp"
 #include <cmath>
 #include "cblas.h"
-#include <iostream>
+#include <stdfloat>
+#include <bit>
 
 namespace duckdb {
 //-------------------------------------------------------------------------
 // Arithmetic Operations
 //-------------------------------------------------------------------------
 
-template <class TYPE>
-inline void Gemm(int rowsA, int columnsB, int rowsB, const TYPE *A, const TYPE *B, TYPE *C) {
+template <class TYPE, class RETURN_TYPE>
+inline void Gemm(int rowsA, int columnsB, int rowsB, const TYPE *A, const TYPE *B, RETURN_TYPE *C) {
     static_assert(sizeof(TYPE) == 0, "Gemm not implemented for this type");
 }
 
 template <>
-inline void Gemm<double>(int rowsA, int columnsB, int rowsB, const double *A, const double *B, double *C) {
+inline void Gemm<double, double>(int rowsA, int columnsB, int rowsB, const double *A, const double *B, double *C) {
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, rowsA, columnsB, rowsB, 1.0, A, rowsB, B, columnsB, 0.0, C, columnsB);
 }
 
 template <>
-inline void Gemm<float>(int rowsA, int columnsB, int rowsB, const float *A, const float *B, float *C) {
+inline void Gemm<float, float>(int rowsA, int columnsB, int rowsB, const float *A, const float *B, float *C) {
     cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, rowsA, columnsB, rowsB, 1.0f, A, rowsB, B, columnsB, 0.0f, C, columnsB);
+}
+
+template <>
+inline void Gemm<uint16_t, float>(int rowsA, int columnsB, int rowsB, const uint16_t *A, const uint16_t *B, float *C) {
+    cblas_sbgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, rowsA, columnsB, rowsB, 1.0f, A, rowsB, B, columnsB, 0.0f, C, columnsB);
 }
 
 struct MatrixMultiplicationOperator {
 	static constexpr bool ALLOW_EMPTY = false;
 
 	template <class TYPE>
-	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const int rowsA, const int rowsB, const int columnsB) {
-		TYPE matrixA[rowsA * rowsB];
-		TYPE matrixB[rowsB * columnsB];
-		TYPE result[rowsA * columnsB] = {0.0};
+	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t rowsA, const idx_t rowsB, const idx_t columnsB) {
+		idx_t sizeC = rowsA * columnsB;
+		std::vector<TYPE> result;
+		result.reserve(sizeC);
 
-		for (idx_t i = 0; i < rowsA * rowsB; i++) {
-			matrixA[i] = *lhs_data++;
-		}
-		for (idx_t i = 0; i < rowsB * columnsB; i++) {
-			matrixB[i] = *rhs_data++;
-		}
-		Gemm<TYPE>(rowsA, columnsB, rowsB, matrixA, matrixB, result);
+		Gemm<TYPE, TYPE>(rowsA, columnsB, rowsB, lhs_data, rhs_data, result.data());
 
-		for (idx_t i = 0; i < rowsA * columnsB; i++) {
+		for (idx_t i = 0; i < sizeC; i++) {
 			*result_data++ = result[i];
 		}
 	}
