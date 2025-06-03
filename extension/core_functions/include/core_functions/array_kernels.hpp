@@ -3,8 +3,6 @@
 #include "duckdb/common/algorithm.hpp"
 #include <cmath>
 #include "cblas.h"
-#include <stdfloat>
-#include <bit>
 
 namespace duckdb {
 //-------------------------------------------------------------------------
