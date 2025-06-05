@@ -44,6 +44,9 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
     duckdb::Vector &vector = args.data[0];
     duckdb::Vector &scalar = args.data[1];
 
+    // Later used to check if list is one-dimensional
+    bool one_dim = true;
+
     // Get size of the list vector and its content
     duckdb::idx_t size = ListVector::GetListSize(vector);
     duckdb::Vector *child = &ListVector::GetEntry(vector);
@@ -54,6 +57,7 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
         size = ListVector::GetListSize(*child);
         child = &ListVector::GetEntry(*child);
         result_child = &ListVector::GetEntry(*result_child);
+        one_dim = false;
     }
     
     // Decompress the list vector (with single values) and flatten them
@@ -69,12 +73,32 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
     // Get the actual data as shared pointer to the first element
     auto data = FlatVector::GetData<TYPE>(*child);
     
+    // Create control variables
     auto current_size = ListVector::GetListSize(result);
+    // Start index of metadata lists (jump to the entry for a specific row)
+    idx_t start_idx = 0;
+    // Start index of data (jump to values that corresponds to a specific row)
+    idx_t offset = 0;
+    idx_t result_offset = 0;
     
     // Function that will be executed for each row
     BinaryExecutor::ExecuteWithNulls<list_entry_t, TYPE, list_entry_t>(
         vector, scalar, result, count,
         [&](const list_entry_t &list, TYPE scalar, ValidityMask &mask, idx_t row_idx) {
+            auto vector_type = vector.GetVectorType();
+
+            idx_t number_elements = 0;
+            if (one_dim) {
+                number_elements = list.length;
+            } else {
+                // If lists are multi-dimensional get list metadata of each sublist that contains single elements
+                auto &child = ListVector::GetEntry(vector);
+                auto *metadata = FlatVector::GetData<list_entry_t>(child);
+                // If vector is constant ignore adjusting to the corresponding row
+                auto start = vector_type == VectorType::CONSTANT_VECTOR ? 0 : start_idx;
+                number_elements = metadata[start].length * list.length;
+            }
+            
             // Reserve space for the result vector
             idx_t new_size = current_size + list.length;
             ListVector::Reserve(result, new_size);
@@ -96,7 +120,12 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
             }
 
             // Perform the actual addition operation 
-            OP::Operation(data + list.offset, &scalar, result_data + result_list.offset, size, true);
+            OP::Operation(data + offset, &scalar, result_data + result_offset, number_elements, true);
+            start_idx += list.length;
+            result_offset += number_elements;
+            if (vector_type != VectorType::CONSTANT_VECTOR) {
+                offset += number_elements;
+            }
             return result_list;
         });
 
@@ -520,7 +549,6 @@ ScalarFunctionSet ListArithMMulFun::GetFunctions() {
 	for (auto &type : LogicalType::Real()) {
         const auto list_single = LogicalType::LIST(type);
         const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
-        const auto metadataType = LogicalType::INTEGER;
         if (type.id() == LogicalTypeId::FLOAT) {
             set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListMatrixMul<float>));
             set.AddFunction(ScalarFunction({list_double, list_single}, list_single, ListMatrixMul<float>));
