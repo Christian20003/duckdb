@@ -345,7 +345,7 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
                 auto metadata = FlatVector::GetData<list_entry_t>(child);
                 // If vector is constant ignore adjusting to the corresponding row
                 auto start = left_type == VectorType::CONSTANT_VECTOR ? 0 : lhs_start;
-                auto condition = left_type == VectorType::CONSTANT_VECTOR ? 1 : lhs_start + left.length;
+                auto condition = left_type == VectorType::CONSTANT_VECTOR ? left.length : lhs_start + left.length;
                 for(idx_t i = start; i < condition; i++) {
                     // Get the size specification and proof if it match with all lists on the same level
                     if (colsA == 0) {
@@ -365,7 +365,7 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
                 auto metadata = FlatVector::GetData<list_entry_t>(child);
                 // If vector is constant ignore adjusting to the corresponding row
                 auto start = right_type == VectorType::CONSTANT_VECTOR ? 0 : rhs_start;
-                auto condition = right_type == VectorType::CONSTANT_VECTOR ? 1 : rhs_start + right.length;
+                auto condition = right_type == VectorType::CONSTANT_VECTOR ? right.length : rhs_start + right.length;
                 for(idx_t i = start; i < condition; i++) {
                     // Get the size specification and proof if it match with all lists on the same level
                     if (colsB == 0) {
