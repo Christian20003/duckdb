@@ -120,6 +120,9 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
     auto &lhs_vec = args.data[0];
     auto &rhs_vec = args.data[1];
 
+    // Later used to check if list is one-dimensional
+    bool one_dim = true;
+
     // Get size of the list vectors and their content
     auto lhs_count = ListVector::GetListSize(lhs_vec);
     auto rhs_count = ListVector::GetListSize(rhs_vec);
@@ -134,6 +137,7 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
         lhs_child = &ListVector::GetEntry(*lhs_child);
         rhs_child = &ListVector::GetEntry(*rhs_child);
         result_child = &ListVector::GetEntry(*result_child);
+        one_dim = false;
     }
     // Decompress the list vectors (with single values) and flatten them
     rhs_child->Flatten(rhs_count);
@@ -155,23 +159,61 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
     auto lhs_data = FlatVector::GetData<TYPE>(*lhs_child);
     auto rhs_data = FlatVector::GetData<TYPE>(*rhs_child);
     
+    // Create control variables
     auto current_size = ListVector::GetListSize(result);
+    // Start index of metadata lists (jump to the entry for a specific row)
+    idx_t start = 0;
+    // Start index of data (jump to values that corresponds to a specific row)
+    idx_t lhs_offset = 0;
+    idx_t rhs_offset = 0;
+    idx_t result_offset = 0;
     
     // Function that will be executed for each row
     BinaryExecutor::ExecuteWithNulls<list_entry_t, list_entry_t, list_entry_t>(
         lhs_vec, rhs_vec, result, count,
         [&](const list_entry_t &left, const list_entry_t &right, ValidityMask &mask, idx_t row_idx) {
+            auto left_type = lhs_vec.GetVectorType();
+            auto right_type = rhs_vec.GetVectorType();
             // Check if the dimensions are equal
             if (left.length != right.length) {
                 throw InvalidInputException(
                     "%s: first list dimensions must be equal, got left length '%d' and right length '%d'", func_name,
                     left.length, right.length);
                 }
-            if (lhs_count != rhs_count) {
-                throw InvalidInputException(
-                    "%s: last list dimensions must be equal, got left length '%d' and right length '%d'", func_name,
-                    lhs_count, rhs_count);
+
+            idx_t number_elements = 0;
+            if (one_dim) {
+                number_elements = left.length;
+            } else {
+                // If lists are multi-dimensional get list metadata of each sublist that contains single elements
+                auto &left_child = ListVector::GetEntry(lhs_vec);
+                auto *left_metadata = FlatVector::GetData<list_entry_t>(left_child);
+                auto &right_child = ListVector::GetEntry(rhs_vec);
+                auto *right_metadata = FlatVector::GetData<list_entry_t>(right_child);
+                // If vector is constant ignore adjusting to the corresponding row
+                auto left_start = left_type == VectorType::CONSTANT_VECTOR ? 0 : start;
+                auto left_condition = left_type == VectorType::CONSTANT_VECTOR ? left.length : start + left.length;
+                auto right_start = right_type == VectorType::CONSTANT_VECTOR ? 0 : start;
+                auto right_condition = right_type == VectorType::CONSTANT_VECTOR ? right.length : start + right.length;
+                for(idx_t i = left_start; i < left_condition; i++) {
+                    // Get the size specification and proof if it match with all lists on the same level
+                    if (number_elements == 0) {
+                        number_elements = left_metadata[i].length;
+                    }
+                    if (number_elements != left_metadata[i].length) {
+                        throw InvalidInputException("Left list has an unevenly distributed number of elements");
+                    }
+                }
+                for(idx_t i = right_start; i < right_condition; i++) {
+                    if (number_elements != right_metadata[i].length) {
+                        throw InvalidInputException(
+                            "%s: last list dimensions must be equal, got left length '%d' and right length '%d'", func_name,
+                            number_elements, right_metadata[i].length);
+                    }
+                }
+                number_elements = left.length * number_elements;
             }
+
             // Reserve space for the result vector
             idx_t new_size = current_size + left.length;
             ListVector::Reserve(result, new_size);
@@ -193,7 +235,16 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
             }
 
             // Perform the actual addition operation 
-            OP::Operation(lhs_data + left.offset, rhs_data + right.offset, result_data + result_list.offset, lhs_count);
+            OP::Operation(lhs_data + lhs_offset, rhs_data + rhs_offset, result_data + result_offset, number_elements);
+            // Adjust control variables
+            if (left_type != VectorType::CONSTANT_VECTOR) {
+                lhs_offset += number_elements;
+            }
+            if (right_type != VectorType::CONSTANT_VECTOR) {
+                rhs_offset += number_elements;
+            }
+            result_offset += number_elements;
+            start += left.length;
             return result_list;
         });
 
