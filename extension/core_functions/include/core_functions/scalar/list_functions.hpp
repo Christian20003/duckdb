@@ -462,4 +462,13 @@ struct ListHasAllFunAlias2 {
 	static constexpr const char *Name = "<@";
 };
 
+struct ListTranspose {
+	static constexpr const char *Name = "transpose";
+	static constexpr const char *Parameters = "list";
+	static constexpr const char *Description = "Transpose the structure of the list";
+	static constexpr const char *Example = "transpose([[5.7, 2.8, 2.6], [8.2, 7.3, 7.2]])";
+
+	static ScalarFunctionSet GetFunctions();
+};
+
 } // namespace duckdb

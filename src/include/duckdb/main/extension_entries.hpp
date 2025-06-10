@@ -723,6 +723,7 @@ static constexpr ExtensionFunctionEntry EXTENSION_FUNCTIONS[] = {
     {"tpch_queries", "tpch", CatalogType::TABLE_FUNCTION_ENTRY},
     {"transaction_timestamp", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"translate", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
+    {"transpose", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"trim", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"trunc", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"txid_current", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},

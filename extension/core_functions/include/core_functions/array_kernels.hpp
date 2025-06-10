@@ -5,6 +5,24 @@
 #include "cblas.h"
 
 namespace duckdb {
+
+//-------------------------------------------------------------------------
+// Modification Operation
+//-------------------------------------------------------------------------
+
+struct TransposeOperator {
+	static constexpr bool ALLOW_EMPTY = false;
+
+	template <class TYPE>
+	static void Operation(const TYPE *data, TYPE *result, const idx_t rows, const idx_t cols) {
+		for(idx_t column = 0; column < cols; column++) {
+			for(idx_t row = 0; row < rows*cols; row+=cols) {
+				*result++ = *(data + column + row);
+			}
+		}
+	}
+};
+
 //-------------------------------------------------------------------------
 // Arithmetic Operations
 //-------------------------------------------------------------------------

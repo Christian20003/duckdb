@@ -266,5 +266,12 @@
         "example": "list_div([[6.3, 2.6], [9.4, 7.2]], [[5.1, 8.2], [6.3, 8.2]])",
         "type": "scalar_function_set",
         "aliases": ["**"]
+    },
+    {
+        "name": "transpose",
+        "parameters": "list",
+        "description": "Transpose the structure of a list (limited to two dimensions)",
+        "example": "transpose([[5.7, 2.8, 2.6], [8.2, 7.3, 7.2]])",
+        "type": "scalar_function_set"
     }
 ]

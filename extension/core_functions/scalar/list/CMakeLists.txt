@@ -9,6 +9,7 @@ add_library_unity(
   list_has_any_or_all.cpp
   list_aggregates.cpp
   list_arithmetic.cpp
+  list_transpose.cpp
   list_distance.cpp
   array_slice.cpp
   list_sort.cpp

@@ -258,6 +258,7 @@ static const StaticFunctionDefinition core_functions[] = {
 	DUCKDB_SCALAR_FUNCTION_SET(ListSliceFun),
 	DUCKDB_SCALAR_FUNCTION_SET(ListSortFun),
 	DUCKDB_SCALAR_FUNCTION(ListTransformFun),
+	DUCKDB_SCALAR_FUNCTION_SET(ListTranspose),
 	DUCKDB_SCALAR_FUNCTION(ListUniqueFun),
 	DUCKDB_SCALAR_FUNCTION(ListValueFun),
 	DUCKDB_AGGREGATE_FUNCTION_SET_ALIAS(ListaggFun),
