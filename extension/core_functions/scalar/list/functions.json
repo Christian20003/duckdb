@@ -189,5 +189,82 @@
         "example": "list_has_all([1, 2, 3], [2, 3])",
         "type": "scalar_function",
         "aliases": ["array_has_all", "@>", "<@"]
+    },
+    {
+        "name": "list_add",
+        "variants": [
+            {
+                "parameters": "l1, l2",
+                "description": "Executes elementwise addition of two equal sized lists (limited to two dimensions)",
+                "example": "list_add([6.3, 2.6, 9.4], [5.1, 8.2, 6.3])"
+            },
+            {
+                "parameters": "list, scalar",
+                "description": "Executes scalar addition on a list (limited to two dimensions)",
+                "example": "list_add([6.3, 2.6, 9.4], 5.5)"
+            }
+        ],
+        "type": "scalar_function_set",
+        "aliases": ["+"] 
+    },
+    {
+        "name": "list_sub",
+        "variants": [
+            {
+                "parameters": "l1, l2",
+                "description": "Executes elementwise subtraction of two equal sized lists (limited to two dimensions)",
+                "example": "list_sub([6.3, 2.6, 9.4], [5.1, 8.2, 6.3])"
+            },
+            {
+                "parameters": "list, scalar",
+                "description": "Executes scalar subtraction on a list (limited to two dimensions)",
+                "example": "list_sub([6.3, 2.6, 9.4], 5.5)"
+            }
+        ],
+        
+        "type": "scalar_function_set",
+        "aliases": ["-"]
+    },
+    {
+        "name": "list_mul",
+        "variants": [
+            {
+                "parameters": "l1, l2",
+                "description": "Executes elementwise multiplication of two equal sized lists (limited to two dimensions)",
+                "example": "list_mul([6.3, 2.6, 9.4], [5.1, 8.2, 6.3])"
+            },
+            {
+                "parameters": "list, scalar",
+                "description": "Executes scalar multiplication on a list (limited to two dimensions)",
+                "example": "list_sub([6.3, 2.6, 9.4], 5.5)"
+            }
+        ],
+        "type": "scalar_function_set",
+        "aliases": ["*"]
+    },
+    {
+        "name": "list_div",
+        "variants": [
+            {
+                "parameters": "l1, l2",
+                "description": "Executes elementwise division of two equal sized lists (limited to two dimensions)",
+                "example": "list_div([6.3, 2.6, 9.4], [5.1, 8.2, 6.3])"
+            },
+            {
+                "parameters": "list, scalar",
+                "description": "Executes scalar division on a list (limited to two dimensions)",
+                "example": "list_div([6.3, 2.6, 9.4], 5.5)"
+            }
+        ],
+        "type": "scalar_function_set",
+        "aliases": ["/"]
+    },
+    {
+        "name": "list_mmul",
+        "parameters": "l1, l2",
+        "description": "Executes matrix multiplication (limited to two dimensions)",
+        "example": "list_div([[6.3, 2.6], [9.4, 7.2]], [[5.1, 8.2], [6.3, 8.2]])",
+        "type": "scalar_function_set",
+        "aliases": ["**"]
     }
 ]

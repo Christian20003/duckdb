@@ -476,7 +476,8 @@ ScalarFunctionSet OperatorAddFun::GetFunctions() {
 	add.AddFunction(AddFunction::GetFunction(LogicalType::DATE, LogicalType::TIME_TZ));
 
 	// we can add lists together
-	add.AddFunction(ListConcatFun::GetFunction());
+	// Replaced with the list_add function from core_functions
+	// add.AddFunction(ListConcatFun::GetFunction());
 
 	return add;
 }

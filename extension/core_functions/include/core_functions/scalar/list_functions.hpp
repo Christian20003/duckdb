@@ -270,6 +270,12 @@ struct ListArithAddFun {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListArithAddFunAlias {
+	using ALIAS = ListArithAddFun;
+
+	static constexpr const char *Name = "+";
+};
+
 struct ListArithSubFun {
 	static constexpr const char *Name = "list_sub";
 	static constexpr const char *Parameters = "list1,list2";
@@ -277,6 +283,12 @@ struct ListArithSubFun {
 	static constexpr const char *Example = "list_sub([1, 2, 3], [4, 5, 6])";
 
 	static ScalarFunctionSet GetFunctions();
+};
+
+struct ListArithSubFunAlias {
+	using ALIAS = ListArithSubFun;
+
+	static constexpr const char *Name = "-";
 };
 
 struct ListArithMulFun {
@@ -288,6 +300,12 @@ struct ListArithMulFun {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListArithMulFunAlias {
+	using ALIAS = ListArithMulFun;
+
+	static constexpr const char *Name = "*";
+};
+
 struct ListArithMMulFun {
 	static constexpr const char *Name = "list_mmul";
 	static constexpr const char *Parameters = "list1,list2";
@@ -297,6 +315,12 @@ struct ListArithMMulFun {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListArithMMulFunAlias {
+	using ALIAS = ListArithMMulFun;
+
+	static constexpr const char *Name = "**";
+};
+
 struct ListArithDivFun {
 	static constexpr const char *Name = "list_div";
 	static constexpr const char *Parameters = "list1,list2";
@@ -304,6 +328,12 @@ struct ListArithDivFun {
 	static constexpr const char *Example = "list_div([1, 2, 3], [4, 5, 6])";
 
 	static ScalarFunctionSet GetFunctions();
+};
+
+struct ListArithDivFunAlias {
+	using ALIAS = ListArithDivFun;
+
+	static constexpr const char *Name = "/";
 };
 
 struct ListCosineDistanceFun {
