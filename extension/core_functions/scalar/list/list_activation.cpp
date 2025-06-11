@@ -7,8 +7,8 @@
 namespace duckdb
 {
 
-template <class TYPE>
-static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &result) {
+template <class TYPE, class OP>
+static void ListActivationFun(DataChunk &args, ExpressionState &state, Vector &result) {
     // Extract function name
     const auto &lstate = state.Cast<ExecuteFunctionState>();
     const auto &expr = lstate.expr.Cast<BoundFunctionExpression>();
@@ -88,30 +88,29 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
             result_metadata.offset = current_size;
             result_metadata.length = cols;
 
-            for (idx_t i = 0; i < cols; i++) {
+            for (idx_t i = 0; i < rows; i++) {
                 Vector subvec(duckdb::LogicalType::LIST(vec_child->GetType()));
-                ListVector::Reserve(subvec, rows);
-                ListVector::SetListSize(subvec, rows);
+                ListVector::Reserve(subvec, cols);
+                ListVector::SetListSize(subvec, cols);
                 auto* list_data = ListVector::GetData(subvec);
                 list_data->offset = 0;
-                list_data->length = rows;
+                list_data->length = cols;
                 ListVector::Append(result, subvec, 1);
             }
             // Get shared pointer to actual data
             auto result_data = FlatVector::GetData<TYPE>(*result_child);
             
             // If the parameter vectors are empty, set the result vector to NULL
-            if (!TransposeOperator::ALLOW_EMPTY && param.length == 0) {
+            if (!OP::ALLOW_EMPTY && param.length == 0) {
                 mask.SetInvalid(row_idx);
                 return result_metadata;
             }
 
             // Perform the actual addition operation
-            TransposeOperator::Operation(
+            OP::Operation(
                 vec_data + offset, 
                 result_data + result_offset,
-                rows,
-                cols
+                rows * cols
             );
             // Adjust control variable
             current_size += result_metadata.length; 
@@ -127,17 +126,17 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
     ListVector::SetListSize(result, current_size);
 }
 
-ScalarFunctionSet ListTranspose::GetFunctions() {
-	ScalarFunctionSet set("transpose");
+ScalarFunctionSet ListSigmoid::GetFunctions() {
+	ScalarFunctionSet set("sig");
 	for (auto &type : LogicalType::Real()) {
-        //const auto list_single = LogicalType::LIST(type);
+        // const auto list_single = LogicalType::LIST(type);
         const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
         if (type.id() == LogicalTypeId::FLOAT) {
-            set.AddFunction(ScalarFunction({list_double}, list_double, ListTransposeFun<float>));
+            set.AddFunction(ScalarFunction({list_double}, list_double, ListActivationFun<float, SigmoidOperator>));
         } else if (type.id() == LogicalTypeId::BFLOAT) {
-            set.AddFunction(ScalarFunction({list_double}, list_double, ListTransposeFun<std::bfloat16_t>));
+            set.AddFunction(ScalarFunction({list_double}, list_double, ListActivationFun<std::bfloat16_t, SigmoidOperator>));
         } else if (type.id() == LogicalTypeId::DOUBLE) {
-            set.AddFunction(ScalarFunction({list_double}, list_double, ListTransposeFun<double>));
+            set.AddFunction(ScalarFunction({list_double}, list_double, ListActivationFun<double, SigmoidOperator>));
         }
 	}
 	for (auto &func : set.functions) {

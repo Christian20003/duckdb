@@ -273,5 +273,12 @@
         "description": "Transpose the structure of a list (limited to two dimensions)",
         "example": "transpose([[5.7, 2.8, 2.6], [8.2, 7.3, 7.2]])",
         "type": "scalar_function_set"
+    },
+    {
+        "name": "sig",
+        "parameters": "list",
+        "description": "Executes sigmoid activation function on each element",
+        "example": "sig([[5.7, 2.8, 2.6], [8.2, 7.3, 7.2]])",
+        "type": "scalar_function_set"
     }
 ]

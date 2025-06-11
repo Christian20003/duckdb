@@ -5,13 +5,27 @@
 #include "cblas.h"
 
 namespace duckdb {
+//-------------------------------------------------------------------------
+// Activation Functions
+//-------------------------------------------------------------------------
+
+struct SigmoidOperator {
+	static constexpr bool ALLOW_EMPTY = true;
+
+	template <class TYPE>
+	static void Operation(const TYPE *data, TYPE *result, const idx_t count) {
+		for(idx_t i = 0; i < count; i++) {
+			*result++ = 1 / (1 + std::exp(-(*data++)));
+		}
+	}
+};
 
 //-------------------------------------------------------------------------
 // Modification Operation
 //-------------------------------------------------------------------------
 
 struct TransposeOperator {
-	static constexpr bool ALLOW_EMPTY = false;
+	static constexpr bool ALLOW_EMPTY = true;
 
 	template <class TYPE>
 	static void Operation(const TYPE *data, TYPE *result, const idx_t rows, const idx_t cols) {

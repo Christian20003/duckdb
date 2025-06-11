@@ -240,6 +240,7 @@ static const StaticFunctionDefinition core_functions[] = {
 	DUCKDB_SCALAR_FUNCTION_SET_ALIAS(ListArithMMulFunAlias),
 	DUCKDB_SCALAR_FUNCTION_SET(ListArithDivFun),
 	DUCKDB_SCALAR_FUNCTION_SET_ALIAS(ListArithDivFunAlias),
+	DUCKDB_SCALAR_FUNCTION_SET(ListSigmoid),
 	DUCKDB_SCALAR_FUNCTION_SET(ListCosineDistanceFun),
 	DUCKDB_SCALAR_FUNCTION_SET(ListCosineSimilarityFun),
 	DUCKDB_SCALAR_FUNCTION_SET(ListDistanceFun),

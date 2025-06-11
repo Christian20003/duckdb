@@ -7,6 +7,7 @@ add_library_unity(
   list_value.cpp
   list_filter.cpp
   list_has_any_or_all.cpp
+  list_activation.cpp
   list_aggregates.cpp
   list_arithmetic.cpp
   list_transpose.cpp

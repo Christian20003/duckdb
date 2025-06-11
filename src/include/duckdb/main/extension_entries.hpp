@@ -522,6 +522,7 @@ static constexpr ExtensionFunctionEntry EXTENSION_FUNCTIONS[] = {
     {"set_bit", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"setseed", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"shapefile_meta", "spatial", CatalogType::TABLE_FUNCTION_ENTRY},
+    {"sig", "core_functions", CatalogType::TABLE_FUNCTION_ENTRY},
     {"sign", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"signbit", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},
     {"sin", "core_functions", CatalogType::SCALAR_FUNCTION_ENTRY},

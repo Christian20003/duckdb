@@ -471,4 +471,13 @@ struct ListTranspose {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListSigmoid {
+	static constexpr const char *Name = "sig";
+	static constexpr const char *Parameters = "list";
+	static constexpr const char *Description = "Executes sigmoid activation function on each element";
+	static constexpr const char *Example = "sig([[5.7, 2.8, 2.6], [8.2, 7.3, 7.2]])";
+
+	static ScalarFunctionSet GetFunctions();
+};
+
 } // namespace duckdb
