@@ -82,7 +82,7 @@ struct AddOperator {
 	static constexpr bool ALLOW_EMPTY = true;
 
 	template <class TYPE>
-	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t count, const bool withScalar = false) {
+	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t count, const bool withScalar = false, const bool scalarFirst = false) {
 		auto lhs_ptr = lhs_data;
 		auto rhs_ptr = rhs_data;
 		auto result_ptr = result_data;
@@ -90,7 +90,11 @@ struct AddOperator {
 		for (idx_t i = 0; i < count; i++) {
 			const TYPE x = *lhs_ptr++;
 			const TYPE y = withScalar ? *rhs_ptr : *rhs_ptr++;
-			*result_ptr++ = x + y;
+			if (withScalar && scalarFirst) {
+				*result_ptr++ = y + x;
+			} else {
+				*result_ptr++ = x + y;
+			}
 		}
 	}
 };
@@ -99,7 +103,7 @@ struct SubOperator {
 	static constexpr bool ALLOW_EMPTY = true;
 
 	template <class TYPE>
-	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t count, const bool withScalar = false) {
+	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t count, const bool withScalar = false, const bool scalarFirst = false) {
 		auto lhs_ptr = lhs_data;
 		auto rhs_ptr = rhs_data;
 		auto result_ptr = result_data;
@@ -107,7 +111,11 @@ struct SubOperator {
 		for (idx_t i = 0; i < count; i++) {
 			const TYPE x = *lhs_ptr++;
 			const TYPE y = withScalar ? *rhs_ptr : *rhs_ptr++;
-			*result_ptr++ = x - y;
+			if (withScalar && scalarFirst) {
+				*result_ptr++ = y - x;
+			} else {
+				*result_ptr++ = x - y;
+			}
 		}
 	}
 };
@@ -116,7 +124,7 @@ struct MulOperator {
 	static constexpr bool ALLOW_EMPTY = true;
 
 	template <class TYPE>
-	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t count, const bool withScalar = false) {
+	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t count, const bool withScalar = false, const bool scalarFirst = false) {
 		auto lhs_ptr = lhs_data;
 		auto rhs_ptr = rhs_data;
 		auto result_ptr = result_data;
@@ -124,7 +132,11 @@ struct MulOperator {
 		for (idx_t i = 0; i < count; i++) {
 			const TYPE x = *lhs_ptr++;
 			const TYPE y = withScalar ? *rhs_ptr : *rhs_ptr++;
-			*result_ptr++ = x * y;
+			if (withScalar && scalarFirst) {
+				*result_ptr++ = y * x;
+			} else {
+				*result_ptr++ = x * y;
+			}
 		}
 	}
 };
@@ -133,7 +145,7 @@ struct DivOperator {
 	static constexpr bool ALLOW_EMPTY = true;
 
 	template <class TYPE>
-	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t count, const bool withScalar = false) {
+	static void Operation(const TYPE *lhs_data, const TYPE *rhs_data, TYPE *result_data, const idx_t count, const bool withScalar = false, const bool scalarFirst = false) {
 		auto lhs_ptr = lhs_data;
 		auto rhs_ptr = rhs_data;
 		auto result_ptr = result_data;
@@ -141,7 +153,11 @@ struct DivOperator {
 		for (idx_t i = 0; i < count; i++) {
 			const TYPE x = *lhs_ptr++;
 			const TYPE y = withScalar ? *rhs_ptr : *rhs_ptr++;
-			*result_ptr++ = x / y;
+			if (withScalar && scalarFirst) {
+				*result_ptr++ = y / x;
+			} else {
+				*result_ptr++ = x / y;
+			}
 		}
 	}
 };

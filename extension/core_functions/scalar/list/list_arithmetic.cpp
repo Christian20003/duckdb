@@ -41,11 +41,13 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
     auto count = args.size();
 
     // Get the parameters
-    duckdb::Vector &vector = args.data[0];
-    duckdb::Vector &scalar = args.data[1];
+    duckdb::Vector &vector = args.data[0].GetType().id() == LogicalTypeId::LIST ? args.data[0] : args.data[1];
+    duckdb::Vector &scalar = args.data[0].GetType().id() == LogicalTypeId::LIST ? args.data[1] : args.data[0];
 
     // Later used to check if list is one-dimensional
     bool one_dim = true;
+    // Later used to check if scalar is fist parameter
+    bool first_scalar = args.data[0].GetType().id() == LogicalTypeId::LIST ? false : true;
 
     // Get size of the list vector and its content
     duckdb::idx_t size = ListVector::GetListSize(vector);
@@ -120,7 +122,7 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
             }
 
             // Perform the actual addition operation 
-            OP::Operation(data + offset, &scalar, result_data + result_offset, number_elements, true);
+            OP::Operation(data + offset, &scalar, result_data + result_offset, number_elements, true, first_scalar);
             start_idx += list.length;
             result_offset += number_elements;
             if (vector_type != VectorType::CONSTANT_VECTOR) {
@@ -485,16 +487,22 @@ static void AddListArithFunction(ScalarFunctionSet &set, const LogicalType &type
         set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArithList<float, OP>));
         set.AddFunction(ScalarFunction({list_single, type}, list_single, ListGenericArithScalar<float, OP>));
         set.AddFunction(ScalarFunction({list_double, type}, list_double, ListGenericArithScalar<float, OP>));
+        set.AddFunction(ScalarFunction({type, list_single}, list_single, ListGenericArithScalar<float, OP>));
+        set.AddFunction(ScalarFunction({type, list_double}, list_double, ListGenericArithScalar<float, OP>));
 	} else if (type.id() == LogicalTypeId::BFLOAT) {
 		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArithList<std::bfloat16_t, OP>));
         set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArithList<std::bfloat16_t, OP>));
         set.AddFunction(ScalarFunction({list_single, type}, list_single, ListGenericArithScalar<std::bfloat16_t, OP>));
         set.AddFunction(ScalarFunction({list_double, type}, list_double, ListGenericArithScalar<std::bfloat16_t, OP>));
+        set.AddFunction(ScalarFunction({type, list_single}, list_single, ListGenericArithScalar<std::bfloat16_t, OP>));
+        set.AddFunction(ScalarFunction({type, list_double}, list_double, ListGenericArithScalar<std::bfloat16_t, OP>));
 	} else if (type.id() == LogicalTypeId::DOUBLE) {
 		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArithList<double, OP>));
         set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArithList<double, OP>));
         set.AddFunction(ScalarFunction({list_single, type}, list_single, ListGenericArithScalar<double, OP>));
         set.AddFunction(ScalarFunction({list_double, type}, list_double, ListGenericArithScalar<double, OP>));
+        set.AddFunction(ScalarFunction({type, list_single}, list_single, ListGenericArithScalar<double, OP>));
+        set.AddFunction(ScalarFunction({type, list_double}, list_double, ListGenericArithScalar<double, OP>));
 	} else {
 		throw NotImplementedException("List function not implemented for type %s", type.ToString());
 	}
