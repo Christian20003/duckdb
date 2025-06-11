@@ -5,6 +5,7 @@ add_library_unity(
   list_transform.cpp
   range.cpp
   list_value.cpp
+  list_fill.cpp
   list_filter.cpp
   list_has_any_or_all.cpp
   list_activation.cpp

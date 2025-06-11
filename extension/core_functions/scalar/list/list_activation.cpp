@@ -81,12 +81,12 @@ static void ListActivationFun(DataChunk &args, ExpressionState &state, Vector &r
             }
 
             // Reserve space for the result vector
-            idx_t new_size = current_size + cols;
+            idx_t new_size = current_size + rows;
             ListVector::Reserve(result, new_size);
             // Set list metadata (of this row)
             list_entry_t result_metadata;
             result_metadata.offset = current_size;
-            result_metadata.length = cols;
+            result_metadata.length = rows;
 
             for (idx_t i = 0; i < rows; i++) {
                 Vector subvec(duckdb::LogicalType::LIST(vec_child->GetType()));

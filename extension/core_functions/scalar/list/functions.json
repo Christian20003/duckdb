@@ -280,5 +280,13 @@
         "description": "Executes sigmoid activation function on each element",
         "example": "sig([[5.7, 2.8, 2.6], [8.2, 7.3, 7.2]])",
         "type": "scalar_function_set"
+    },
+    {
+        "name": "list_fill",
+        "parameters": "scalar, list",
+        "description": "Generates a list with the scalar as element and the list as dimension structure specification",
+        "example": "list_fill(0.5, [2,2])",
+        "type": "scalar_function_set",
+        "aliases": ["array_fill"]
     }
 ]

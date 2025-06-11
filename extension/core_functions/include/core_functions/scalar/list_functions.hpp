@@ -480,4 +480,19 @@ struct ListSigmoid {
 	static ScalarFunctionSet GetFunctions();
 };
 
+struct ListFill {
+	static constexpr const char *Name = "list_fill";
+	static constexpr const char *Parameters = "scalar, list";
+	static constexpr const char *Description = "Generates a list with the scalar as element and the list as dimension structure specification";
+	static constexpr const char *Example = "list_fill(0.5, [2,2])";
+
+	static ScalarFunctionSet GetFunctions();
+};
+
+struct ArrayFill {
+	using ALIAS = ListFill;
+
+	static constexpr const char *Name = "array_fill";
+};
+
 } // namespace duckdb
