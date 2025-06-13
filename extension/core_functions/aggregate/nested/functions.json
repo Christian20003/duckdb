@@ -21,5 +21,13 @@
         "example": "list(A)",
         "type": "aggregate_function",
         "aliases": ["array_agg"]
+    },
+    {
+        "name": "list_sum",
+        "parameters": "list",
+        "description": "Returns a LIST containing the sum of each element position",
+        "example": "list_sum(A)",
+        "type": "aggregate_function_set",
+        "aliases": ["sum"]
     }
 ]

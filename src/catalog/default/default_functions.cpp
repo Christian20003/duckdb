@@ -146,7 +146,7 @@ static const DefaultMacro internal_macros[] = {
 	{DEFAULT_SCHEMA, "list_max", {"l", nullptr}, {{nullptr, nullptr}}, "list_aggr(l, 'max')"},
 	{DEFAULT_SCHEMA, "list_product", {"l", nullptr}, {{nullptr, nullptr}}, "list_aggr(l, 'product')"},
 	{DEFAULT_SCHEMA, "list_skewness", {"l", nullptr}, {{nullptr, nullptr}}, "list_aggr(l, 'skewness')"},
-	{DEFAULT_SCHEMA, "list_sum", {"l", nullptr}, {{nullptr, nullptr}}, "list_aggr(l, 'sum')"},
+	//{DEFAULT_SCHEMA, "list_sum", {"l", nullptr}, {{nullptr, nullptr}}, "list_aggr(l, 'sum')"},
 	{DEFAULT_SCHEMA, "list_string_agg", {"l", nullptr}, {{nullptr, nullptr}}, "list_aggr(l, 'string_agg')"},
 
 	// holistic list aggregates

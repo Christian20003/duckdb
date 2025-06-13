@@ -50,4 +50,19 @@ struct ArrayAggFun {
 	static constexpr const char *Name = "array_agg";
 };
 
+struct ListSum {
+	static constexpr const char *Name = "list_sum";
+	static constexpr const char *Parameters = "list";
+	static constexpr const char *Description = "Returns a LIST containing the sum of each element position";
+	static constexpr const char *Example = "list_sum(A)";
+
+	static AggregateFunctionSet GetFunctions();
+};
+
+struct ListSumAlias {
+	using ALIAS = ListSum;
+
+	static constexpr const char *Name = "sum";
+};
+
 } // namespace duckdb

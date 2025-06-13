@@ -2264,6 +2264,9 @@ const vector<unique_ptr<Vector>> &StructVector::GetEntries(const Vector &vector)
 //===--------------------------------------------------------------------===//
 template <class T>
 T &ListVector::GetEntryInternal(T &vector) {
+	if (vector.GetType().id() != LogicalTypeId::LIST && vector.GetType().id() != LogicalTypeId::MAP) {
+		int i = 0;
+	}
 	D_ASSERT(vector.GetType().id() == LogicalTypeId::LIST || vector.GetType().id() == LogicalTypeId::MAP);
 	if (vector.GetVectorType() == VectorType::DICTIONARY_VECTOR) {
 		auto &child = DictionaryVector::Child(vector);
