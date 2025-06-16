@@ -18,13 +18,13 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
     auto count = args.size();
 
     // Get function parameters (IMPORTANT: This will include all rows from a chunk)
-    auto &vec = args.data[0];
+    auto &vector = args.data[0];
 
     // Get list size
-    auto vec_size = ListVector::GetListSize(vec);
+    auto vec_size = ListVector::GetListSize(vector);
 
     // Get child vector
-    auto *vec_child = &ListVector::GetEntry(vec);
+    auto *vec_child = &ListVector::GetEntry(vector);
     auto *result_child = &ListVector::GetEntry(result);
 
     // If the current child vectors contain further lists, select their children until reaching last level
@@ -45,41 +45,44 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
         throw InvalidInputException("%s: argument can not contain NULL values", func_name);
     }
 
-    // Get the actual data as shared pointer to the first element
+    // Get the actual data as pointer to the first element
     auto vec_data = FlatVector::GetData<TYPE>(*vec_child);
     
-    // Create control variables
+    // Stores at the end the overall size of the resulting vector
     auto current_size = ListVector::GetListSize(result);
-    // Start index of metadata lists (jump to the entry for a specific row)
-    idx_t start_index = 0;
+    // Start index of list_entry_t objects (jump to the start entry for a specific row)
+    idx_t start_idx = 0;
     // Start index of data (jump to values that corresponds to a specific row)
     idx_t offset = 0;
     idx_t result_offset = 0;
     
     // Function that will be executed for each row
     UnaryExecutor::ExecuteWithNulls<list_entry_t, list_entry_t>(
-        vec, result, count,
-        [&](const list_entry_t &param, ValidityMask &mask, idx_t row_idx) {
+        vector, result, count,
+        [&](const list_entry_t &list, ValidityMask &mask, idx_t row_idx) {
             // Extract dimension values
-            auto rows = param.length;
+            auto rows = list.length;
             uint64_t cols = 0;
 
-            // If left is multi-dimensional get list metadata of each sublist that contains single elements
-            auto &child = ListVector::GetEntry(vec);
-            auto metadata = FlatVector::GetData<list_entry_t>(child);
-            // If vector is constant ignore adjusting to the corresponding row
-            auto start = start_index;
-            auto condition = start_index + param.length;
-            for(idx_t i = start; i < condition; i++) {
-                // Get the size specification and proof if it match with all lists on the same level
-                if (cols == 0) {
-                    cols = metadata[i].length;
+            auto &child = ListVector::GetEntry(vector);
+            if (child.GetType().id() == LogicalTypeId::LIST) {
+                // If left is multi-dimensional get list metadata of each sublist that contains single elements
+                auto metadata = ListVector::GetData(child);
+                auto start = start_idx;
+                auto condition = start_idx + list.length;
+                for(idx_t i = start; i < condition; i++) {
+                    // Get the size specification and proof if it match with all lists on the same level
+                    if (cols == 0) {
+                        cols = metadata[i].length;
+                    }
+                    if (cols != metadata[i].length) {
+                        throw InvalidInputException("List has an unevenly distributed number of elements");
+                    }
                 }
-                if (cols != metadata[i].length) {
-                    throw InvalidInputException("List has an unevenly distributed number of elements");
-                }
+            } else {
+                cols = 1;
             }
-
+            
             // Reserve space for the result vector
             idx_t new_size = current_size + cols;
             ListVector::Reserve(result, new_size);
@@ -88,20 +91,24 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
             result_metadata.offset = current_size;
             result_metadata.length = cols;
 
+            // Create subvector which contains result of this row
+            Vector subvec(duckdb::LogicalType::LIST(vec_child->GetType()));
+            ListVector::Reserve(subvec, cols * rows);
+            ListVector::SetListSize(subvec, cols * rows);
+            auto* list_data = ListVector::GetData(subvec);
             for (idx_t i = 0; i < cols; i++) {
-                Vector subvec(duckdb::LogicalType::LIST(vec_child->GetType()));
-                ListVector::Reserve(subvec, rows);
-                ListVector::SetListSize(subvec, rows);
-                auto* list_data = ListVector::GetData(subvec);
-                list_data->offset = 0;
-                list_data->length = rows;
-                ListVector::Append(result, subvec, 1);
+                list_data[i].offset = i * rows;
+                list_data[i].length = rows;
             }
+            ListVector::Append(result, subvec, cols);
             // Get shared pointer to actual data
+            if (result_child->GetType().id() == LogicalTypeId::LIST) {
+                result_child = &ListVector::GetEntry(*result_child);
+            }
             auto result_data = FlatVector::GetData<TYPE>(*result_child);
             
             // If the parameter vectors are empty, set the result vector to NULL
-            if (!TransposeOperator::ALLOW_EMPTY && param.length == 0) {
+            if (!TransposeOperator::ALLOW_EMPTY && list.length == 0) {
                 mask.SetInvalid(row_idx);
                 return result_metadata;
             }
@@ -115,7 +122,7 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
             );
             // Adjust control variable
             current_size += result_metadata.length; 
-            start_index += param.length;
+            start_idx += list.length;
             offset += rows * cols;
             result_offset += rows * cols;
             return result_metadata;
@@ -130,13 +137,17 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
 ScalarFunctionSet ListTranspose::GetFunctions() {
 	ScalarFunctionSet set("transpose");
 	for (auto &type : LogicalType::Real()) {
-        //const auto list_single = LogicalType::LIST(type);
+        // Single list currently not working
+        const auto list_single = LogicalType::LIST(type);
         const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
         if (type.id() == LogicalTypeId::FLOAT) {
+            set.AddFunction(ScalarFunction({list_single}, list_double, ListTransposeFun<float>));
             set.AddFunction(ScalarFunction({list_double}, list_double, ListTransposeFun<float>));
         } else if (type.id() == LogicalTypeId::BFLOAT) {
+            set.AddFunction(ScalarFunction({list_single}, list_double, ListTransposeFun<std::bfloat16_t>));
             set.AddFunction(ScalarFunction({list_double}, list_double, ListTransposeFun<std::bfloat16_t>));
         } else if (type.id() == LogicalTypeId::DOUBLE) {
+            set.AddFunction(ScalarFunction({list_single}, list_double, ListTransposeFun<double>));
             set.AddFunction(ScalarFunction({list_double}, list_double, ListTransposeFun<double>));
         }
 	}

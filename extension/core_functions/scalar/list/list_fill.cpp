@@ -19,14 +19,13 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
 
     // Get function parameters (IMPORTANT: This will include all rows from a chunk)
     auto &value = args.data[0];
-    auto &vec = args.data[1];
+    auto &vector = args.data[1];
 
     // Get list size
-    auto vec_size = ListVector::GetListSize(vec);
+    auto vec_size = ListVector::GetListSize(vector);
 
     // Get child vector
-    auto *vec_child = &ListVector::GetEntry(vec);
-    auto *result_child = &ListVector::GetEntry(result);
+    auto *vec_child = &ListVector::GetEntry(vector);
 
     // Decompress the list vector (with single values) and flatten them
     vec_child->Flatten(vec_size);
@@ -40,8 +39,18 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
 
     // Get the actual data as shared pointer to the first element
     auto vec_data = FlatVector::GetData<int32_t>(*vec_child);
+
+    // Get the number of result dimensions according to the return type
+    auto return_type = result.GetType();
+    auto *result_child = &result;
+    idx_t expected_dims = 0;
+    while(return_type.id() == LogicalTypeId::LIST) {
+        return_type = ListType::GetChildType(return_type);
+        result_child = &ListVector::GetEntry(*result_child);
+        expected_dims++;
+    }
     
-    // Create control variables
+    // Stores at the end the overall size of the resulting vector
     auto current_size = ListVector::GetListSize(result);
     // Start index of data (jump to values that corresponds to a specific row)
     idx_t offset = 0;
@@ -49,48 +58,52 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
     
     // Function that will be executed for each row
     BinaryExecutor::ExecuteWithNulls<TYPE, list_entry_t, list_entry_t>(
-        value, vec, result, count,
+        value, vector, result, count,
         [&](const TYPE content, const list_entry_t &dimensions, ValidityMask &mask, idx_t row_idx) {
-            if (dimensions.length > 2) {
-                throw InvalidInputException("%s: Only lists with at most 2 values are supported", func_name);
-            } else if (dimensions.length == 0) {
-                throw InvalidInputException("%s: List requires at least one value", func_name);
+            if (dimensions.length != expected_dims) {
+                throw InvalidInputException("%s: Expected a list with exactly %i entries", func_name, expected_dims);
             }
 
-            idx_t rows = *(vec_data + offset);
-            idx_t cols = dimensions.length == 2 ? *(vec_data + 1 + offset) : 0;
+            idx_t dim_val = *(vec_data + offset);
+            //idx_t cols = dimensions.length == 2 ? *(vec_data + 1 + offset) : 0;
 
             // Reserve space for the result vector
-            idx_t new_size = current_size + rows;
+            idx_t new_size = current_size + dim_val;
             ListVector::Reserve(result, new_size);
             // Set list metadata (of this row)
             list_entry_t result_metadata;
             result_metadata.offset = current_size;
-            result_metadata.length = rows;
+            result_metadata.length = dim_val;
 
-            if (cols != 0) {
-                for (idx_t i = 0; i < rows; i++) {
-                    Vector subvec(duckdb::LogicalType::LIST(vec_child->GetType()));
-                    ListVector::Reserve(subvec, cols);
-                    ListVector::SetListSize(subvec, cols);
-                    auto* list_data = ListVector::GetData(subvec);
-                    list_data->offset = 0;
-                    list_data->length = cols;
-                    ListVector::Append(result, subvec, 1);
+            auto *to_append_vec = &result;
+            auto type = result.GetType();
+            idx_t number_elements = dim_val;
+            for (idx_t i = 1; i < dimensions.length; i++) {
+                dim_val = *(vec_data + offset + i);
+                type = ListType::GetChildType(type);
+                Vector child(type);
+                ListVector::Reserve(child, number_elements * dim_val);
+                ListVector::SetListSize(child, number_elements * dim_val);
+                auto* list_data = ListVector::GetData(child);
+                for(idx_t j = 0; j < number_elements; j++) {
+                    list_data[j].offset = j * dim_val;
+                    list_data[j].length = dim_val;
                 }
+                ListVector::Append(*to_append_vec, child, number_elements);
+                to_append_vec = &ListVector::GetEntry(*to_append_vec);
+                number_elements *= dim_val;
             }
             // Get shared pointer to actual data
             auto result_data = FlatVector::GetData<TYPE>(*result_child);
             
             TYPE *result_ptr = result_data + result_offset;
-            auto condition = cols != 0 ? rows * cols : rows;
-            for(idx_t i = 0; i < condition; i++) {
+            for(idx_t i = 0; i < number_elements; i++) {
                 *result_ptr++ = content;
             }
 
             // Adjust control variable
             current_size += result_metadata.length; 
-            result_offset += cols != 0 ? rows * cols : rows;
+            result_offset += number_elements;
             offset += dimensions.length; 
             return result_metadata;
         });

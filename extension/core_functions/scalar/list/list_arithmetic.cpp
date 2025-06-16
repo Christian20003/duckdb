@@ -37,16 +37,14 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
     const auto &expr = lstate.expr.Cast<BoundFunctionExpression>();
     const auto &func_name = expr.function.name;
 
-    // Get number of parameters
+    // Get number of rows
     auto count = args.size();
 
-    // Get the parameters
+    // Get the parameters (function allow both orders (list, scalar) <=> (scalar, list))
     duckdb::Vector &vector = args.data[0].GetType().id() == LogicalTypeId::LIST ? args.data[0] : args.data[1];
     duckdb::Vector &scalar = args.data[0].GetType().id() == LogicalTypeId::LIST ? args.data[1] : args.data[0];
 
-    // Later used to check if list is one-dimensional
-    bool one_dim = true;
-    // Later used to check if scalar is fist parameter
+    // For some scalar operation important to now the order of values (subtract, divide)
     bool first_scalar = args.data[0].GetType().id() == LogicalTypeId::LIST ? false : true;
 
     // Get size of the list vector and its content
@@ -59,7 +57,6 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
         size = ListVector::GetListSize(*child);
         child = &ListVector::GetEntry(*child);
         result_child = &ListVector::GetEntry(*result_child);
-        one_dim = false;
     }
     
     // Decompress the list vector (with single values) and flatten them
@@ -72,14 +69,16 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
         throw InvalidInputException("%s: left argument can not contain NULL values", func_name);
     }
 
-    // Get the actual data as shared pointer to the first element
+    // Get the actual data as pointer to the first element
     auto data = FlatVector::GetData<TYPE>(*child);
     
-    // Create control variables
+    // Stores at the end the overall size of the resulting vector
     auto current_size = ListVector::GetListSize(result);
-    // Start index of metadata lists (jump to the entry for a specific row)
+    // Stores the vector type
+    auto vector_type = vector.GetVectorType();
+    // Start index of list_entry_t objects (jump to the start entry for a specific row)
     idx_t start_idx = 0;
-    // Start index of data (jump to values that corresponds to a specific row)
+    // Start index of data (jump to the first value that corresponds to a specific row in input and result)
     idx_t offset = 0;
     idx_t result_offset = 0;
     
@@ -87,26 +86,48 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
     BinaryExecutor::ExecuteWithNulls<list_entry_t, TYPE, list_entry_t>(
         vector, scalar, result, count,
         [&](const list_entry_t &list, TYPE scalar, ValidityMask &mask, idx_t row_idx) {
-            auto vector_type = vector.GetVectorType();
-
-            idx_t number_elements = 0;
-            if (one_dim) {
-                number_elements = list.length;
-            } else {
-                // If lists are multi-dimensional get list metadata of each sublist that contains single elements
-                auto &child = ListVector::GetEntry(vector);
-                auto *metadata = FlatVector::GetData<list_entry_t>(child);
-                // If vector is constant ignore adjusting to the corresponding row
-                auto start = vector_type == VectorType::CONSTANT_VECTOR ? 0 : start_idx;
-                number_elements = metadata[start].length * list.length;
-            }
-            
             // Reserve space for the result vector
             idx_t new_size = current_size + list.length;
             ListVector::Reserve(result, new_size);
-            // TODO: Maybe find better solution than copy
-            // Is currently needed, to ensure that sublists have a valid offset
-            VectorOperations::Copy(ListVector::GetEntry(vector), ListVector::GetEntry(result), list.offset + list.length, list.offset, current_size);
+
+            // Pointer to the input vector (and later to its possible childs)  
+            auto *current_vec = &ListVector::GetEntry(vector);
+            // Pointer to a vector which should be extended
+            auto *result_vec = &result;
+            // Number of list_entry_t objects in current dimension
+            auto size = list.length;
+            // Number of list elements
+            idx_t number_elements = list.length;
+            // Iterate over each dimension
+            while(current_vec->GetType().id() == LogicalTypeId::LIST) {
+                // Get the list_entry_t list of current dimension
+                auto *metadata = ListVector::GetData(*current_vec);
+                idx_t number = 0;
+                auto start = vector_type == VectorType::CONSTANT_VECTOR ? 0 : start_idx;
+                // Count the number of list elements
+                for(idx_t i = start; i < size + start; i++) {
+                    number += metadata[i].length;
+                }
+                // Create a new vector which should be appended to the upper dimension
+                Vector child(current_vec->GetType());
+                ListVector::Reserve(child, number);
+                ListVector::SetListSize(child, number);
+                auto *child_metadata = ListVector::GetData(child);
+                idx_t data_offset = 0;
+                // Adjust list_entry_t list of newly created child
+                for(idx_t i = 0; i < size; i++) {
+                    child_metadata[i].offset = data_offset;
+                    child_metadata[i].length = metadata[i + start].length;
+                    data_offset += metadata[i + start].length;
+                }
+                // Append it to the vector representing upper dimension and go further to next lower dimension
+                ListVector::Append(*result_vec, child, size);
+                current_vec = &ListVector::GetEntry(*current_vec);
+                result_vec = &ListVector::GetEntry(*result_vec);
+                size = metadata[0].length;
+                number_elements = number;
+            }
+
             auto result_data = FlatVector::GetData<TYPE>(*result_child);
             
             // Specify metadata for the result vector
@@ -144,17 +165,14 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
     const auto &expr = lstate.expr.Cast<BoundFunctionExpression>();
     const auto &func_name = expr.function.name;
 
-    // Get number of parameters
+    // Get number of rows
     auto count = args.size();
 
-    // Get the list vectors (parameters)
+    // Get list vectors (parameters)
     auto &lhs_vec = args.data[0];
     auto &rhs_vec = args.data[1];
 
-    // Later used to check if list is one-dimensional
-    bool one_dim = true;
-
-    // Get size of the list vectors and their content
+    // Get size of list vectors and their content
     auto lhs_count = ListVector::GetListSize(lhs_vec);
     auto rhs_count = ListVector::GetListSize(rhs_vec);
     auto *lhs_child = &ListVector::GetEntry(lhs_vec);
@@ -168,7 +186,6 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
         lhs_child = &ListVector::GetEntry(*lhs_child);
         rhs_child = &ListVector::GetEntry(*rhs_child);
         result_child = &ListVector::GetEntry(*result_child);
-        one_dim = false;
     }
     // Decompress the list vectors (with single values) and flatten them
     rhs_child->Flatten(rhs_count);
@@ -186,15 +203,18 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
         throw InvalidInputException("%s: right argument can not contain NULL values", func_name);
     }
 
-    // Get the actual data as shared pointer to the first element
+    // Get the actual data as pointer to the first element
     auto lhs_data = FlatVector::GetData<TYPE>(*lhs_child);
     auto rhs_data = FlatVector::GetData<TYPE>(*rhs_child);
     
-    // Create control variables
+    // Stores at the end the overall size of the resulting vector
     auto current_size = ListVector::GetListSize(result);
-    // Start index of metadata lists (jump to the entry for a specific row)
-    idx_t start = 0;
-    // Start index of data (jump to values that corresponds to a specific row)
+    // Stores the vector type
+    auto left_type = lhs_vec.GetVectorType();
+    auto right_type = rhs_vec.GetVectorType();
+    // Start index of list_entry_t objects (jump to the start entry for a specific row)
+    idx_t start_idx = 0;
+    // Start index of data (jump to the first value that corresponds to a specific row in both inputs and result)
     idx_t lhs_offset = 0;
     idx_t rhs_offset = 0;
     idx_t result_offset = 0;
@@ -203,54 +223,63 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
     BinaryExecutor::ExecuteWithNulls<list_entry_t, list_entry_t, list_entry_t>(
         lhs_vec, rhs_vec, result, count,
         [&](const list_entry_t &left, const list_entry_t &right, ValidityMask &mask, idx_t row_idx) {
-            auto left_type = lhs_vec.GetVectorType();
-            auto right_type = rhs_vec.GetVectorType();
             // Check if the dimensions are equal
             if (left.length != right.length) {
                 throw InvalidInputException(
-                    "%s: first list dimensions must be equal, got left length '%d' and right length '%d'", func_name,
+                    "%s: List dimensions must be equal, got left length '%d' and right length '%d'", func_name,
                     left.length, right.length);
-                }
-
-            idx_t number_elements = 0;
-            if (one_dim) {
-                number_elements = left.length;
-            } else {
-                // If lists are multi-dimensional get list metadata of each sublist that contains single elements
-                auto &left_child = ListVector::GetEntry(lhs_vec);
-                auto *left_metadata = FlatVector::GetData<list_entry_t>(left_child);
-                auto &right_child = ListVector::GetEntry(rhs_vec);
-                auto *right_metadata = FlatVector::GetData<list_entry_t>(right_child);
-                // If vector is constant ignore adjusting to the corresponding row
-                auto left_start = left_type == VectorType::CONSTANT_VECTOR ? 0 : start;
-                auto left_condition = left_type == VectorType::CONSTANT_VECTOR ? left.length : start + left.length;
-                auto right_start = right_type == VectorType::CONSTANT_VECTOR ? 0 : start;
-                auto right_condition = right_type == VectorType::CONSTANT_VECTOR ? right.length : start + right.length;
-                for(idx_t i = left_start; i < left_condition; i++) {
-                    // Get the size specification and proof if it match with all lists on the same level
-                    if (number_elements == 0) {
-                        number_elements = left_metadata[i].length;
-                    }
-                    if (number_elements != left_metadata[i].length) {
-                        throw InvalidInputException("Left list has an unevenly distributed number of elements");
-                    }
-                }
-                for(idx_t i = right_start; i < right_condition; i++) {
-                    if (number_elements != right_metadata[i].length) {
-                        throw InvalidInputException(
-                            "%s: last list dimensions must be equal, got left length '%d' and right length '%d'", func_name,
-                            number_elements, right_metadata[i].length);
-                    }
-                }
-                number_elements = left.length * number_elements;
             }
-
             // Reserve space for the result vector
             idx_t new_size = current_size + left.length;
             ListVector::Reserve(result, new_size);
-            // TODO: Maybe find better solution than copy
-            // Is currently needed, to ensure that sublists have a valid offset
-            VectorOperations::Copy(ListVector::GetEntry(lhs_vec), ListVector::GetEntry(result), left.offset + left.length, left.offset, current_size);
+
+            // Pointer to the input vectors (and later to its possible childs)  
+            auto *current_lhs_vec = &ListVector::GetEntry(lhs_vec);
+            auto *current_rhs_vec = &ListVector::GetEntry(rhs_vec);
+            // Pointer to a vector which should be extended
+            auto *result_vec = &result;
+            // Number of list_entry_t objects in current dimension
+            auto size = left.length;
+            // Number of list elements
+            idx_t number_elements = left.length;
+            // Iterate over each dimension (IMPORTANT: Both parameters must have the same structure)
+            while(current_lhs_vec->GetType().id() == LogicalTypeId::LIST) {
+                // Get the list_entry_t list of current dimension
+                auto *lhs_metadata = ListVector::GetData(*current_lhs_vec);
+                auto *rhs_metadata = ListVector::GetData(*current_rhs_vec);
+                idx_t number = 0;
+                auto lhs_start = left_type == VectorType::CONSTANT_VECTOR ? 0 : start_idx;
+                auto rhs_start = right_type == VectorType::CONSTANT_VECTOR ? 0 : start_idx;
+                // Count the number of list elements and proof if both parameters have the same structure
+                for(idx_t i = lhs_start, j = rhs_start; i < size + lhs_start && j < size + rhs_start; i++, j++) {
+                    if (lhs_metadata[i].length != rhs_metadata[j].length) {
+                        throw InvalidInputException(
+                            "%s: List dimensions must be equal, got left length '%d' and right length '%d'", func_name,
+                            lhs_metadata[i].length, rhs_metadata[j].length);
+                    }
+                    number += lhs_metadata[i].length;
+                }
+                // Create a new vector which should be appended to the upper dimension
+                Vector child(current_lhs_vec->GetType());
+                ListVector::Reserve(child, number);
+                ListVector::SetListSize(child, number);
+                auto *child_metadata = ListVector::GetData(child);
+                idx_t data_offset = 0;
+                // Adjust list_entry_t list of newly created child
+                for(idx_t i = 0; i < size; i++) {
+                    child_metadata[i].offset = data_offset;
+                    child_metadata[i].length = lhs_metadata[i + lhs_start].length;
+                    data_offset += lhs_metadata[i + lhs_start].length;
+                }
+                // Append it to the vector representing upper dimension and go further to next lower dimension
+                ListVector::Append(*result_vec, child, size);
+                current_lhs_vec = &ListVector::GetEntry(*current_lhs_vec);
+                current_rhs_vec = &ListVector::GetEntry(*current_rhs_vec);
+                result_vec = &ListVector::GetEntry(*result_vec);
+                size = lhs_metadata[0].length;
+                number_elements = number;
+            }
+
             auto result_data = FlatVector::GetData<TYPE>(*result_child);
             
             // Specify metadata for the result vector
@@ -275,7 +304,7 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
                 rhs_offset += number_elements;
             }
             result_offset += number_elements;
-            start += left.length;
+            start_idx += left.length;
             return result_list;
         });
 
@@ -302,10 +331,6 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
     // Get list size
     auto lhs_list_size = ListVector::GetListSize(lhs_vec);
     auto rhs_list_size = ListVector::GetListSize(rhs_vec);
-    
-    // Later used to check if list is one-dimensional
-    bool lhs_one_dim = true;
-    bool rhs_one_dim = true;
 
     // Get child vectors
     auto *lhs_child = &ListVector::GetEntry(lhs_vec);
@@ -317,13 +342,11 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
     while(lhs_child->GetType().id() == LogicalTypeId::LIST) {
         lhs_list_size = ListVector::GetListSize(*lhs_child);
         lhs_child = &ListVector::GetEntry(*lhs_child);
-        lhs_one_dim = false;
     }
     while(rhs_child->GetType().id() == LogicalTypeId::LIST) {
         rhs_list_size = ListVector::GetListSize(*rhs_child);
         rhs_child = &ListVector::GetEntry(*rhs_child);
         result_child = &ListVector::GetEntry(*result_child);
-        rhs_one_dim = false;
     }
 
     // Decompress the list vectors (with single values) and flatten them
@@ -342,13 +365,16 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
         throw InvalidInputException("%s: right argument can not contain NULL values", func_name);
     }
 
-    // Get the actual data as shared pointer to the first element
+    // Get the actual data as pointer to the first element
     auto lhs_data = FlatVector::GetData<TYPE>(*lhs_child);
     auto rhs_data = FlatVector::GetData<TYPE>(*rhs_child);
     
-    // Create control variables
+    // Stores at the end the overall size of the resulting vector
     auto current_size = ListVector::GetListSize(result);
-    // Start index of metadata lists (jump to the entry for a specific row)
+    // Stores the vector type
+    auto left_type = lhs_vec.GetVectorType();
+    auto right_type = rhs_vec.GetVectorType();
+    // Start index of list_entry_t objects (jump to the start entry for a specific row)
     idx_t lhs_start = 0;
     idx_t rhs_start = 0;
     // Start index of data (jump to values that corresponds to a specific row)
@@ -360,20 +386,16 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
     BinaryExecutor::ExecuteWithNulls<list_entry_t, list_entry_t, list_entry_t>(
         lhs_vec, rhs_vec, result, count,
         [&](const list_entry_t &left, const list_entry_t &right, ValidityMask &mask, idx_t row_idx) {
-            auto left_type = lhs_vec.GetVectorType();
-            auto right_type = rhs_vec.GetVectorType();
             // Extract dimension values
             auto rowsA = left.length;
             auto rowsB = right.length;
             uint64_t colsA = 0;
             uint64_t colsB = 0;
 
-            if (lhs_one_dim) {
-                colsA = 1;
-            } else {
-                // If left is multi-dimensional get list metadata of each sublist that contains single elements
-                auto &child = ListVector::GetEntry(lhs_vec);
-                auto metadata = FlatVector::GetData<list_entry_t>(child);
+            auto &left_child = ListVector::GetEntry(lhs_vec);
+            // If left is multi-dimensional get list metadata of each sublist that contains single elements
+            if (left_child.GetType().id() == LogicalTypeId::LIST){
+                auto *metadata = ListVector::GetData(left_child);
                 // If vector is constant ignore adjusting to the corresponding row
                 auto start = left_type == VectorType::CONSTANT_VECTOR ? 0 : lhs_start;
                 auto condition = left_type == VectorType::CONSTANT_VECTOR ? left.length : lhs_start + left.length;
@@ -386,14 +408,14 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
                         throw InvalidInputException("Left list has an unevenly distributed number of elements");
                     }
                 }
+            } else {
+                colsA = 1;
             }
 
-            if (rhs_one_dim) {
-                colsB = 1;
-            } else {
-                // If right is multi-dimensional get list metadata of each sublist that contains single elements
-                auto &child = ListVector::GetEntry(rhs_vec);
-                auto metadata = FlatVector::GetData<list_entry_t>(child);
+            auto &right_child = ListVector::GetEntry(rhs_vec);
+            // If right is multi-dimensional get list metadata of each sublist that contains single elements
+            if (right_child.GetType().id() == LogicalTypeId::LIST) {
+                auto *metadata = ListVector::GetData(right_child);
                 // If vector is constant ignore adjusting to the corresponding row
                 auto start = right_type == VectorType::CONSTANT_VECTOR ? 0 : rhs_start;
                 auto condition = right_type == VectorType::CONSTANT_VECTOR ? right.length : rhs_start + right.length;
@@ -406,6 +428,8 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
                         throw InvalidInputException("Right list has an unevenly distributed number of elements");
                     }
                 }
+            } else {
+                colsB = 1;
             }
             auto rowsC = rowsA;
             auto colsC = colsB;
@@ -424,17 +448,17 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
             result_metadata.offset = current_size;
             result_metadata.length = rowsC;
 
-            // If result is two dimensional append sublists
+            // If result is two dimensional append sublist
             if (colsC > 1) {
+                Vector subvec(duckdb::LogicalType::LIST(rhs_child->GetType()));
+                ListVector::Reserve(subvec, rowsC * colsC);
+                ListVector::SetListSize(subvec, rowsC * colsC);
+                auto* list_data = ListVector::GetData(subvec);
                 for (idx_t i = 0; i < rowsC; i++) {
-                    Vector subvec(duckdb::LogicalType::LIST(rhs_child->GetType()));
-                    ListVector::Reserve(subvec, colsC);
-                    ListVector::SetListSize(subvec, colsC);
-                    auto* list_data = ListVector::GetData(subvec);
-                    list_data->offset = 0;
-                    list_data->length = colsC;
-                    ListVector::Append(result, subvec, 1);
+                    list_data[i].offset = i * colsC;
+                    list_data[i].length = colsC;
                 }
+                ListVector::Append(result, subvec, rowsC);
             }
             // Get shared pointer to actual data
             auto result_data = FlatVector::GetData<TYPE>(*result_child);
