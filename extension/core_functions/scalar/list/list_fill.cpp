@@ -21,15 +21,12 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
     auto &value = args.data[0];
     auto &vector = args.data[1];
 
-    // Get list size
+    // Select the child vector which is not of type LIST (vector which contains elements of type INTEGER)
     auto vec_size = ListVector::GetListSize(vector);
-
-    // Get child vector
     auto *vec_child = &ListVector::GetEntry(vector);
 
-    // Decompress the list vector (with single values) and flatten them
+    // Transform ListVector into FlatVector to get access to the elements
     vec_child->Flatten(vec_size);
-
     D_ASSERT(vec_child->GetVectorType() == VectorType::FLAT_VECTOR);
 
     // NULL values are not allowed
@@ -37,10 +34,11 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
         throw InvalidInputException("%s: argument can not contain NULL values", func_name);
     }
 
-    // Get the actual data as shared pointer to the first element
+    // Get a pointer to the first element
     auto vec_data = FlatVector::GetData<int32_t>(*vec_child);
 
     // Get the number of result dimensions according to the return type
+    // And the child vector of result which is not of type LIST (vector which contains elements of type TYPE)
     auto return_type = result.GetType();
     auto *result_child = &result;
     idx_t expected_dims = 0;
@@ -64,8 +62,8 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
                 throw InvalidInputException("%s: Expected a list with exactly %i entries", func_name, expected_dims);
             }
 
+            // The current number of elements in a dimension
             idx_t dim_val = *(vec_data + offset);
-            //idx_t cols = dimensions.length == 2 ? *(vec_data + 1 + offset) : 0;
 
             // Reserve space for the result vector
             idx_t new_size = current_size + dim_val;
@@ -75,10 +73,14 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
             result_metadata.offset = current_size;
             result_metadata.length = dim_val;
 
+            // Pointer to vector which should get a child
             auto *to_append_vec = &result;
             auto type = result.GetType();
             idx_t number_elements = dim_val;
+            // Iterate over each dimension (except the first one - is already assigned)
             for (idx_t i = 1; i < dimensions.length; i++) {
+                // Build a new child vector which contains number of elements based on the given
+                // value from the input vector
                 dim_val = *(vec_data + offset + i);
                 type = ListType::GetChildType(type);
                 Vector child(type);
@@ -89,13 +91,15 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
                     list_data[j].offset = j * dim_val;
                     list_data[j].length = dim_val;
                 }
+                // Append it to the upper vector
                 ListVector::Append(*to_append_vec, child, number_elements);
                 to_append_vec = &ListVector::GetEntry(*to_append_vec);
                 number_elements *= dim_val;
             }
-            // Get shared pointer to actual data
+            // Get a pointer to the first element of result
             auto result_data = FlatVector::GetData<TYPE>(*result_child);
             
+            // Add the input value to the result vector
             TYPE *result_ptr = result_data + result_offset;
             for(idx_t i = 0; i < number_elements; i++) {
                 *result_ptr++ = content;
@@ -118,7 +122,7 @@ ScalarFunctionSet ListFill::GetFunctions() {
 	ScalarFunctionSet set("list_fill");
 	for (auto &type : LogicalType::Real()) {
         const auto list_single = LogicalType::LIST(type);
-        const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
+        //const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
         const auto list_arg = LogicalType::LIST(LogicalType::INTEGER);
         if (type.id() == LogicalTypeId::FLOAT) {
             set.AddFunction(ScalarFunction({type, list_arg}, list_single, ListFillFun<float>));

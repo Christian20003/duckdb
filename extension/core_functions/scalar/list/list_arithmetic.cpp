@@ -6,8 +6,16 @@
 
 namespace duckdb {
 
+// Specific implementation for matrix multiplication with bfloat (openBlas)
 template <>
-void MatrixMultiplicationOperator::Operation<std::bfloat16_t>(const std::bfloat16_t *lhs_data, const std::bfloat16_t *rhs_data, std::bfloat16_t *result_data, const idx_t rowsA, const idx_t rowsB, const idx_t columnsB) {
+void MatrixMultiplicationOperator::Operation<std::bfloat16_t>(
+    const std::bfloat16_t *lhs_data, 
+    const std::bfloat16_t *rhs_data, 
+    std::bfloat16_t *result_data, 
+    const idx_t rowsA, 
+    const idx_t rowsB, 
+    const idx_t columnsB) 
+{
 	idx_t sizeA = rowsA * rowsB;
 	idx_t sizeB = rowsB * columnsB;
 	idx_t sizeC = rowsA * columnsB;
@@ -47,21 +55,18 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
     // For some scalar operation important to now the order of values (subtract, divide)
     bool first_scalar = args.data[0].GetType().id() == LogicalTypeId::LIST ? false : true;
 
-    // Get size of the list vector and its content
+    // Select the child vectors which are not of type LIST (vectors which contain elements of type TYPE)
     duckdb::idx_t size = ListVector::GetListSize(vector);
     duckdb::Vector *child = &ListVector::GetEntry(vector);
     auto *result_child = &ListVector::GetEntry(result);
-
-    // If the list vector contain nested list vectors, select their children until reaching last level
     while(child->GetType().id() == LogicalTypeId::LIST) {
         size = ListVector::GetListSize(*child);
         child = &ListVector::GetEntry(*child);
         result_child = &ListVector::GetEntry(*result_child);
     }
     
-    // Decompress the list vector (with single values) and flatten them
+    // Transform ListVector into FlatVector to get access to the elements
     child->Flatten(size);
-
     D_ASSERT(child->GetVectorType() == VectorType::FLAT_VECTOR);
 
     // NULL values are not allowed
@@ -172,14 +177,12 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
     auto &lhs_vec = args.data[0];
     auto &rhs_vec = args.data[1];
 
-    // Get size of list vectors and their content
+    // Select the child vectors which are not of type LIST (vectors which contain elements of type TYPE)
     auto lhs_count = ListVector::GetListSize(lhs_vec);
     auto rhs_count = ListVector::GetListSize(rhs_vec);
     auto *lhs_child = &ListVector::GetEntry(lhs_vec);
     auto *rhs_child = &ListVector::GetEntry(rhs_vec);
     auto *result_child = &ListVector::GetEntry(result);
-
-    // If the list vectors contain nested list vectors, select their children until reaching last level
     while(lhs_child->GetType().id() == LogicalTypeId::LIST) {
         lhs_count = ListVector::GetListSize(*lhs_child);
         rhs_count = ListVector::GetListSize(*rhs_child);
@@ -187,10 +190,10 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
         rhs_child = &ListVector::GetEntry(*rhs_child);
         result_child = &ListVector::GetEntry(*result_child);
     }
-    // Decompress the list vectors (with single values) and flatten them
+
+    // Transform ListVector into FlatVector to get access to the elements
     rhs_child->Flatten(rhs_count);
     lhs_child->Flatten(lhs_count);
-
     D_ASSERT(lhs_child->GetVectorType() == VectorType::FLAT_VECTOR);
     D_ASSERT(rhs_child->GetVectorType() == VectorType::FLAT_VECTOR);
 
@@ -328,17 +331,12 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
     auto &lhs_vec = args.data[0];
     auto &rhs_vec = args.data[1];
 
-    // Get list size
+    // Select the child vectors which are not of type LIST (vectors which contain elements of type TYPE)
     auto lhs_list_size = ListVector::GetListSize(lhs_vec);
     auto rhs_list_size = ListVector::GetListSize(rhs_vec);
-
-    // Get child vectors
     auto *lhs_child = &ListVector::GetEntry(lhs_vec);
     auto *rhs_child = &ListVector::GetEntry(rhs_vec);
     auto *result_child = &ListVector::GetEntry(result);
-
-    // If the current child vectors contain further lists, select their children until reaching last level
-    // And extract their list size
     while(lhs_child->GetType().id() == LogicalTypeId::LIST) {
         lhs_list_size = ListVector::GetListSize(*lhs_child);
         lhs_child = &ListVector::GetEntry(*lhs_child);
@@ -349,10 +347,9 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
         result_child = &ListVector::GetEntry(*result_child);
     }
 
-    // Decompress the list vectors (with single values) and flatten them
+    // Transform ListVector into FlatVector to get access to the elements
     rhs_child->Flatten(lhs_list_size);
     lhs_child->Flatten(rhs_list_size);
-
     D_ASSERT(lhs_child->GetVectorType() == VectorType::FLAT_VECTOR);
     D_ASSERT(rhs_child->GetVectorType() == VectorType::FLAT_VECTOR);
 

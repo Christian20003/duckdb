@@ -17,27 +17,21 @@ static void ListActivationFun(DataChunk &args, ExpressionState &state, Vector &r
     // Get number of rows
     auto count = args.size();
 
-    // Get function parameters (IMPORTANT: This will include all rows from a chunk)
+    // Get function parameter (IMPORTANT: This will include all rows from a chunk)
     auto &vector = args.data[0];
 
-    // Get list size
+    // Select the child vector which is not of type LIST (vector which contains elements of type TYPE)
     auto vec_size = ListVector::GetListSize(vector);
-
-    // Get child vector
     auto *vec_child = &ListVector::GetEntry(vector);
     auto *result_child = &ListVector::GetEntry(result);
-
-    // If the current child vectors contain further lists, select their children until reaching last level
-    // And extract their list size
     while(vec_child->GetType().id() == LogicalTypeId::LIST) {
         vec_size = ListVector::GetListSize(*vec_child);
         vec_child = &ListVector::GetEntry(*vec_child);
         result_child = &ListVector::GetEntry(*result_child);
     }
 
-    // Decompress the list vector (with single values) and flatten them
+    // Transform ListVector into FlatVector to get access to the elements
     vec_child->Flatten(vec_size);
-
     D_ASSERT(vec_child->GetVectorType() == VectorType::FLAT_VECTOR);
 
     // NULL values are not allowed
@@ -45,7 +39,7 @@ static void ListActivationFun(DataChunk &args, ExpressionState &state, Vector &r
         throw InvalidInputException("%s: argument can not contain NULL values", func_name);
     }
 
-    // Get the actual data as pointer to the first element
+    // Get a pointer to the first element
     auto vec_data = FlatVector::GetData<TYPE>(*vec_child);
     
     // Stores at the end the overall size of the resulting vector
@@ -107,7 +101,7 @@ static void ListActivationFun(DataChunk &args, ExpressionState &state, Vector &r
             result_metadata.offset = current_size;
             result_metadata.length = list.length;
 
-            // Get shared pointer to actual data
+            // Get a pointer to the first element of result
             auto result_data = FlatVector::GetData<TYPE>(*result_child);
             
             // If the parameter vectors are empty, set the result vector to NULL
@@ -116,13 +110,13 @@ static void ListActivationFun(DataChunk &args, ExpressionState &state, Vector &r
                 return result_metadata;
             }
 
-            // Perform the actual activation  operation
+            // Perform the actual activation operation
             OP::Operation(
                 vec_data + offset, 
                 result_data + result_offset,
                 number_elements
             );
-            // Adjust control variable
+            // Adjust control variables
             current_size += result_metadata.length; 
             start_idx += list.length;
             offset += number_elements;

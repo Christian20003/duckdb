@@ -35,8 +35,6 @@ struct ListBindSumData : public FunctionData {
 };
 
 ListBindSumData::ListBindSumData(const LogicalType &stype_p) : stype(stype_p) {
-	// always unnest once because the result vector is of type LIST
-	// auto type = ListType::GetChildType(stype_p);
 	GetSegmentDataFunctions(functions, stype_p);
 }
 
@@ -211,13 +209,6 @@ static void ListSumFinalize(Vector &states_vector, AggregateInputData &aggr_inpu
 	// reserve capacity, then iterate over all entries again and copy over the data to the child vector
 	ListVector::Reserve(result, total_len);
 	list_bind_data.functions.BuildListVector(state.linked_list, result, 0);
-
-	/* auto *child = &ListVector::GetEntry(test);
-	while(child->GetType().id() == LogicalTypeId::LIST) {
-		auto *metadata = ListVector::GetData(*child);
-		child = &ListVector::GetEntry(*child);
-	}
-	auto *data = FlatVector::GetData<float>(*child); */
 
 	ListVector::SetListSize(result, total_len);
 }
