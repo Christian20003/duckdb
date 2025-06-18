@@ -495,4 +495,13 @@ struct ArrayFill {
 	static constexpr const char *Name = "array_fill";
 };
 
+struct HighestPosition {
+	static constexpr const char *Name = "highestposition";
+	static constexpr const char *Parameters = "list";
+	static constexpr const char *Description = "Returns the index of the largest list element";
+	static constexpr const char *Example = "highestposition([5.7, 2.8, 2.6])";
+
+	static ScalarFunctionSet GetFunctions();
+};
+
 } // namespace duckdb

@@ -288,5 +288,12 @@
         "example": "list_fill(0.5, [2,2])",
         "type": "scalar_function_set",
         "aliases": ["array_fill"]
+    },
+    {
+        "name": "highestposition",
+        "parameters": "list",
+        "description": "Returns the index of the largest list element",
+        "example": "highestposition([5.7, 2.8, 2.6])",
+        "type": "scalar_function_set"
     }
 ]

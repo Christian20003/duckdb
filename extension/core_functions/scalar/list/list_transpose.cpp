@@ -135,7 +135,6 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
 ScalarFunctionSet ListTranspose::GetFunctions() {
 	ScalarFunctionSet set("transpose");
 	for (auto &type : LogicalType::Real()) {
-        // Single list currently not working
         const auto list_single = LogicalType::LIST(type);
         const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
         if (type.id() == LogicalTypeId::FLOAT) {
