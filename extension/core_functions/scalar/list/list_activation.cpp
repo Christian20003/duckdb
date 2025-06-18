@@ -44,11 +44,12 @@ static void ListActivationFun(DataChunk &args, ExpressionState &state, Vector &r
     
     // Stores at the end the overall size of the resulting vector
     auto current_size = ListVector::GetListSize(result);
-    // Start index of list_entry_t objects (jump to the start entry for a specific row)
-    idx_t start_idx = 0;
     // Start index of data (jump to values that corresponds to a specific row)
-    idx_t offset = 0;
     idx_t result_offset = 0;
+
+    // Copy input vector to result, because input structure == output structure
+    // Rebuilding result vector from scratch should be less efficient
+    VectorOperations::Copy(vector, result, count, 0, 0);
     
     // Function that will be executed for each row
     UnaryExecutor::ExecuteWithNulls<list_entry_t, list_entry_t>(
@@ -58,69 +59,59 @@ static void ListActivationFun(DataChunk &args, ExpressionState &state, Vector &r
             idx_t new_size = current_size + list.length;
             ListVector::Reserve(result, new_size);
 
-            // Pointer to the input vector (and later to its possible childs)  
-            auto *current_vec = &ListVector::GetEntry(vector);
-            // Pointer to a vector which should be extended
-            auto *result_vec = &result;
-            // Number of list_entry_t objects in current dimension
-            auto size = list.length;
-            // Number of list elements
-            idx_t number_elements = list.length;
-            // Iterate over each dimension
-            while(current_vec->GetType().id() == LogicalTypeId::LIST) {
-                // Get the list_entry_t list of current dimension
-                auto *metadata = ListVector::GetData(*current_vec);
-                idx_t number = 0;
-                auto start = start_idx;
-                // Count the number of list elements
-                for(idx_t i = start; i < size + start; i++) {
-                    number += metadata[i].length;
-                }
-                // Create a new vector which should be appended to the upper dimension
-                Vector child(current_vec->GetType());
-                ListVector::Reserve(child, number);
-                ListVector::SetListSize(child, number);
-                auto *child_metadata = ListVector::GetData(child);
-                idx_t data_offset = 0;
-                // Adjust list_entry_t list of newly created child
-                for(idx_t i = 0; i < size; i++) {
-                    child_metadata[i].offset = data_offset;
-                    child_metadata[i].length = metadata[i + start].length;
-                    data_offset += metadata[i + start].length;
-                }
-                // Append it to the vector representing upper dimension and go further to next lower dimension
-                ListVector::Append(*result_vec, child, size);
-                current_vec = &ListVector::GetEntry(*current_vec);
-                result_vec = &ListVector::GetEntry(*result_vec);
-                size = metadata[0].length;
-                number_elements = number;
-            }
-
             // Set list metadata (of this row)
             list_entry_t result_metadata;
             result_metadata.offset = current_size;
             result_metadata.length = list.length;
 
-            // Get a pointer to the first element of result
-            auto result_data = FlatVector::GetData<TYPE>(*result_child);
-            
-            // If the parameter vectors are empty, set the result vector to NULL
+            // If the parameter vectors are empty, set the result to NULL
             if (!OP::ALLOW_EMPTY && list.length == 0) {
                 mask.SetInvalid(row_idx);
                 return result_metadata;
             }
 
+            // Value which stores the current offset of a specific dimension
+            idx_t offset = list.offset;
+            // Value which store the current length of a specific dimension
+            idx_t length = list.length;
+
+            auto *child = &ListVector::GetEntry(vector);
+            auto *child2 = &ListVector::GetEntry(*child);
+            while(child->GetType().id() == LogicalTypeId::LIST) {
+                // Value which stores the number of elements in the current dimension and row
+                idx_t sublist_length = 0;
+                // Value which stores the number of elements in the current dimension and previous rows
+                idx_t prev_length = 0;
+                // Get list_entry_t objects of current child vector
+                auto *metadata = ListVector::GetData(*child);
+                for(idx_t i = 0; i < offset + length; i++) {
+                    // Adjust number elements of this row
+                    if (i >= offset) {
+                        sublist_length += metadata[i].length;
+                    // Adjust number elements of previous rows
+                    } else {
+                        prev_length += metadata[i].length;
+                    }
+                }
+                // Adjust offset for next dimension
+                offset = prev_length;
+                // Adjust length for next dimension
+                length = sublist_length;
+                child = &ListVector::GetEntry(*child);
+            }
+
+            // Get a pointer to the first element of result
+            auto result_data = FlatVector::GetData<TYPE>(*result_child);
+
             // Perform the actual activation operation
             OP::Operation(
                 vec_data + offset, 
                 result_data + result_offset,
-                number_elements
+                length
             );
-            // Adjust control variables
+            // Adjust result size and data offset
             current_size += result_metadata.length; 
-            start_idx += list.length;
-            offset += number_elements;
-            result_offset += number_elements;
+            result_offset += length;
             return result_metadata;
         });
 
@@ -135,6 +126,7 @@ ScalarFunctionSet ListSigmoid::GetFunctions() {
 	for (auto &type : LogicalType::Real()) {
         const auto list_single = LogicalType::LIST(type);
         const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
+        const auto test = LogicalType::LIST(LogicalType::LIST(LogicalType::LIST(type)));
         if (type.id() == LogicalTypeId::FLOAT) {
             set.AddFunction(ScalarFunction({list_single}, list_single, ListActivationFun<float, SigmoidOperator>));
             set.AddFunction(ScalarFunction({list_double}, list_double, ListActivationFun<float, SigmoidOperator>));
@@ -144,6 +136,7 @@ ScalarFunctionSet ListSigmoid::GetFunctions() {
         } else if (type.id() == LogicalTypeId::DOUBLE) {
             set.AddFunction(ScalarFunction({list_single}, list_single, ListActivationFun<double, SigmoidOperator>));
             set.AddFunction(ScalarFunction({list_double}, list_double, ListActivationFun<double, SigmoidOperator>));
+            set.AddFunction(ScalarFunction({test}, test, ListActivationFun<double, SigmoidOperator>));
         }
 	}
 	for (auto &func : set.functions) {

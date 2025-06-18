@@ -44,10 +44,7 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
     
     // Stores at the end the overall size of the resulting vector
     auto current_size = ListVector::GetListSize(result);
-    // Start index of list_entry_t objects (jump to the first entry for a specific row)
-    idx_t start_idx = 0;
     // Start index of data (jump to values that corresponds to a specific row)
-    idx_t offset = 0;
     idx_t result_offset = 0;
     
     // Function that will be executed for each row
@@ -57,27 +54,25 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
             // Dimensions that should be transposed
             auto rows = list.length;
             uint64_t cols = 0;
+            // Offset to the data of type TYPE which corresponds to the current selected LIST
+            idx_t prev_length = 0;
 
-            // Extract cols dimension
+            // Identify the column dimension value of the parameter if it has more than one dimension
             auto &child = ListVector::GetEntry(vector);
-            // If list has more than one dimension
-            if (child.GetType().id() == LogicalTypeId::LIST) {
-                // Get list_entry_t objects of current child vector
-                auto metadata = ListVector::GetData(child);
-                // Get the size specification and proof if it match with all list_entry_t objects of the same row
-                auto start = start_idx;
-                auto condition = start_idx + list.length;
-                for(idx_t i = start; i < condition; i++) {
-                    if (cols == 0) {
-                        cols = metadata[i].length;
-                    }
-                    if (cols != metadata[i].length) {
+            // Extract column dimension from list_entry_t objects of child
+            if (child.GetType().id() == LogicalTypeId::LIST){
+                auto *metadata = ListVector::GetData(child);
+                cols = metadata[list.offset].length;
+                for(idx_t i = 0; i < list.offset + list.length; i++) {
+                    // Proof if all list_entry_t objects have the same structure of the current row
+                    if (cols != metadata[i].length && i >= list.offset) {
                         throw InvalidInputException("List has an unevenly distributed number of elements");
                     }
+                    // Count the number of elements of previous rows
+                    if (i < list.offset) {
+                        prev_length += metadata[i].length;
+                    }
                 }
-            // If list has only one dimension
-            } else {
-                cols = 1;
             }
             
             // Reserve space for the result vector
@@ -87,6 +82,12 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
             list_entry_t result_metadata;
             result_metadata.offset = current_size;
             result_metadata.length = cols;
+
+            // If the parameter vectors are empty, set the result to NULL
+            if (!TransposeOperator::ALLOW_EMPTY && list.length == 0) {
+                mask.SetInvalid(row_idx);
+                return result_metadata;
+            }
 
             // Create subvector which contains result of this row
             Vector subvec(duckdb::LogicalType::LIST(vec_child->GetType()));
@@ -104,24 +105,16 @@ static void ListTransposeFun(DataChunk &args, ExpressionState &state, Vector &re
                 result_child = &ListVector::GetEntry(*result_child);
             }
             auto result_data = FlatVector::GetData<TYPE>(*result_child);
-            
-            // If the parameter vectors are empty, set the result vector to NULL
-            if (!TransposeOperator::ALLOW_EMPTY && list.length == 0) {
-                mask.SetInvalid(row_idx);
-                return result_metadata;
-            }
 
             // Perform the actual transpose operation
             TransposeOperator::Operation(
-                vec_data + offset, 
+                vec_data + prev_length, 
                 result_data + result_offset,
                 rows,
                 cols
             );
             // Adjust control variables
             current_size += result_metadata.length; 
-            start_idx += list.length;
-            offset += rows * cols;
             result_offset += rows * cols;
             return result_metadata;
         });
