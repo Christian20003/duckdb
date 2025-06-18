@@ -76,7 +76,6 @@ static void ListActivationFun(DataChunk &args, ExpressionState &state, Vector &r
             idx_t length = list.length;
 
             auto *child = &ListVector::GetEntry(vector);
-            auto *child2 = &ListVector::GetEntry(*child);
             while(child->GetType().id() == LogicalTypeId::LIST) {
                 // Value which stores the number of elements in the current dimension and row
                 idx_t sublist_length = 0;
@@ -126,7 +125,6 @@ ScalarFunctionSet ListSigmoid::GetFunctions() {
 	for (auto &type : LogicalType::Real()) {
         const auto list_single = LogicalType::LIST(type);
         const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
-        const auto test = LogicalType::LIST(LogicalType::LIST(LogicalType::LIST(type)));
         if (type.id() == LogicalTypeId::FLOAT) {
             set.AddFunction(ScalarFunction({list_single}, list_single, ListActivationFun<float, SigmoidOperator>));
             set.AddFunction(ScalarFunction({list_double}, list_double, ListActivationFun<float, SigmoidOperator>));
@@ -136,7 +134,6 @@ ScalarFunctionSet ListSigmoid::GetFunctions() {
         } else if (type.id() == LogicalTypeId::DOUBLE) {
             set.AddFunction(ScalarFunction({list_single}, list_single, ListActivationFun<double, SigmoidOperator>));
             set.AddFunction(ScalarFunction({list_double}, list_double, ListActivationFun<double, SigmoidOperator>));
-            set.AddFunction(ScalarFunction({test}, test, ListActivationFun<double, SigmoidOperator>));
         }
 	}
 	for (auto &func : set.functions) {

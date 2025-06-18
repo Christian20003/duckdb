@@ -94,6 +94,13 @@ else()
   add_subdirectory(transaction)
   add_subdirectory(verification)
 
+  find_library(OPENBLAS_LIB NAMES openblas HINTS "${PROJECT_SOURCE_DIR}/third_party/openblas/lib")
+
+  if(NOT OPENBLAS_LIB)
+    message(FATAL_ERROR "OpenBLAS library not found. Please check the path.")
+  endif()
+  add_library(openblas STATIC IMPORTED)
+
   set(DUCKDB_LINK_LIBS
       ${DUCKDB_SYSTEM_LIBS}
       duckdb_fsst
