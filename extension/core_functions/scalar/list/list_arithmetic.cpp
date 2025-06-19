@@ -38,6 +38,9 @@ void MatrixMultiplicationOperator::Operation<std::bfloat16_t>(
 	}
 };
 
+/**
+ * This function executes scalar operations on lists
+ */
 template <class TYPE, class OP>
 static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vector &result) {
     // Extract function name
@@ -152,6 +155,9 @@ static void ListGenericArithScalar(DataChunk &args, ExpressionState &state, Vect
     ListVector::SetListSize(result, current_size);
 }
 
+/**
+ * This function executes elementwise operations on lists
+ */
 template <class TYPE, class OP>
 static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector &result) {
     // Extract function name
@@ -301,6 +307,10 @@ static void ListGenericArithList(DataChunk &args, ExpressionState &state, Vector
     ListVector::SetListSize(result, current_size);
 }
 
+/**
+ * This function executes matrix multiplication on lists
+ * (IMPORTANT: Limited on lists with at most two dimensions)
+ */
 template <class TYPE>
 static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &result) {
     // Extract function name
@@ -463,80 +473,234 @@ static void ListMatrixMul(DataChunk &args, ExpressionState &state, Vector &resul
 // Function Registration
 //-------------------------------------------------------------------------
 
-template <class OP>
-static void AddListArithFunction(ScalarFunctionSet &set, const LogicalType &type) {
-	const auto list_single = LogicalType::LIST(type);
-    const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
-	if (type.id() == LogicalTypeId::FLOAT) {
-		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArithList<float, OP>));
-        set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArithList<float, OP>));
-        set.AddFunction(ScalarFunction({list_single, type}, list_single, ListGenericArithScalar<float, OP>));
-        set.AddFunction(ScalarFunction({list_double, type}, list_double, ListGenericArithScalar<float, OP>));
-        set.AddFunction(ScalarFunction({type, list_single}, list_single, ListGenericArithScalar<float, OP>));
-        set.AddFunction(ScalarFunction({type, list_double}, list_double, ListGenericArithScalar<float, OP>));
-	} else if (type.id() == LogicalTypeId::BFLOAT) {
-		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArithList<std::bfloat16_t, OP>));
-        set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArithList<std::bfloat16_t, OP>));
-        set.AddFunction(ScalarFunction({list_single, type}, list_single, ListGenericArithScalar<std::bfloat16_t, OP>));
-        set.AddFunction(ScalarFunction({list_double, type}, list_double, ListGenericArithScalar<std::bfloat16_t, OP>));
-        set.AddFunction(ScalarFunction({type, list_single}, list_single, ListGenericArithScalar<std::bfloat16_t, OP>));
-        set.AddFunction(ScalarFunction({type, list_double}, list_double, ListGenericArithScalar<std::bfloat16_t, OP>));
-	} else if (type.id() == LogicalTypeId::DOUBLE) {
-		set.AddFunction(ScalarFunction({list_single, list_single}, list_single, ListGenericArithList<double, OP>));
-        set.AddFunction(ScalarFunction({list_double, list_double}, list_double, ListGenericArithList<double, OP>));
-        set.AddFunction(ScalarFunction({list_single, type}, list_single, ListGenericArithScalar<double, OP>));
-        set.AddFunction(ScalarFunction({list_double, type}, list_double, ListGenericArithScalar<double, OP>));
-        set.AddFunction(ScalarFunction({type, list_single}, list_single, ListGenericArithScalar<double, OP>));
-        set.AddFunction(ScalarFunction({type, list_double}, list_double, ListGenericArithScalar<double, OP>));
-	} else {
-		throw NotImplementedException("List function not implemented for type %s", type.ToString());
-	}
+/**
+ * This struct stores important properties to select the correct function
+ */
+struct ListArithBindData : public FunctionData {
+    LogicalType element_type;
+    bool scalar_op;
+    ListArithBindData(LogicalType element_type, bool scalar_op) : element_type(element_type), scalar_op(scalar_op) {}
+    unique_ptr<FunctionData> Copy() const override { 
+        return make_uniq<ListArithBindData>(element_type, scalar_op); 
+    }
+    bool Equals(const FunctionData &other_p) const override {
+        auto &other = other_p.Cast<ListArithBindData>();
+        return element_type == other.element_type && scalar_op == other.scalar_op;
+    }
+};
+
+/**
+ * This function determines if the given parameters are valid and selects the return type
+ */
+static unique_ptr<FunctionData> ListArithBind(ClientContext &, ScalarFunction &bound_function, vector<unique_ptr<Expression>> &arguments) {
+    D_ASSERT(arguments.size() == 2);
+    LogicalType element_type;
+    bool scalar_op = false;
+    LogicalType arg1_type = arguments[0]->return_type;
+    LogicalType arg2_type = arguments[1]->return_type;
+    if (arg1_type.id() != LogicalTypeId::LIST && !arg1_type.IsNumeric()) {
+        throw BinderException("%s is not supported for this function", arg1_type);
+    }
+    if (arg2_type.id() != LogicalTypeId::LIST && !arg2_type.IsNumeric()) {
+        throw BinderException("%s is not supported for this function", arg2_type);
+    }
+    if (arg1_type.id() != LogicalTypeId::LIST && arg2_type.id() != LogicalTypeId::LIST) {
+        throw BinderException("At least one argument must be a LIST");
+    }
+    // If the input parameters are two lists
+    if (arg1_type.id() == LogicalTypeId::LIST && arg2_type.id() == LogicalTypeId::LIST) {
+        while(arg1_type.id() == LogicalTypeId::LIST) {
+            arg1_type = ListType::GetChildType(arg1_type);
+            arg2_type = ListType::GetChildType(arg2_type);
+            if (arg1_type != arg2_type) {
+                throw BinderException("Unequal types %s and %s", arg1_type, arg2_type);
+            }
+        }
+        element_type = arg1_type;
+        bound_function.return_type = arguments[0]->return_type;
+    }
+    // If left is list and right a scalar
+    if (arg1_type.id() == LogicalTypeId::LIST) {
+        while(arg1_type.id() == LogicalTypeId::LIST) {
+            arg1_type = ListType::GetChildType(arg1_type);
+        }
+        element_type = arg1_type;
+        scalar_op = true;
+        bound_function.return_type = arguments[0]->return_type;
+        if (!arg2_type.IsNumeric()) {
+            throw BinderException("Provided scalar is not numeric");
+        }
+        bound_function.arguments[1] = arg1_type;
+    }
+    // If left is scalar and right a list
+    if (arg2_type.id() == LogicalTypeId::LIST) {
+        while(arg2_type.id() == LogicalTypeId::LIST) {
+            arg2_type = ListType::GetChildType(arg2_type);
+        }
+        element_type = arg2_type;
+        scalar_op = true;
+        bound_function.return_type = arguments[1]->return_type;
+        if (!arg1_type.IsNumeric()) {
+            throw BinderException("Provided scalar is not numeric");
+        }
+        bound_function.arguments[0] = arg2_type;
+    }
+    return make_uniq<ListArithBindData>(element_type, scalar_op);
 }
 
+/**
+ * This function selects the correct function according to the parameter types
+ */
+template<class OP>
+static void ListArithExec(DataChunk &args, ExpressionState &state, Vector &result) {
+    auto &func_expr = state.expr.Cast<BoundFunctionExpression>();
+    auto &info = func_expr.bind_info->Cast<ListArithBindData>();
+    switch (info.element_type.id()) {
+    case LogicalTypeId::FLOAT:
+        if (info.scalar_op) {
+            ListGenericArithScalar<float, OP>(args, state, result);
+        } else {
+            ListGenericArithList<float, OP>(args, state, result);
+        } 
+        break;
+    case LogicalTypeId::DOUBLE:
+        if (info.scalar_op) {
+            ListGenericArithScalar<double, OP>(args, state, result);
+        } else {
+            ListGenericArithList<double, OP>(args, state, result);
+        }
+        break;
+    case LogicalTypeId::BFLOAT:
+        if (info.scalar_op) {
+            ListGenericArithScalar<std::bfloat16_t, OP>(args, state, result);
+        } else {
+            ListGenericArithList<std::bfloat16_t, OP>(args, state, result);
+        }
+        break;
+    default:
+        throw NotImplementedException("Unsupported element type for list arithmetic");
+    }
+}
+
+/**
+ * Registers the list_add() functions
+ */
 ScalarFunctionSet ListArithAddFun::GetFunctions() {
 	ScalarFunctionSet set("list_add");
-	for (auto &type : LogicalType::Real()) {
-		AddListArithFunction<AddOperator>(set, type);
-	}
+	set.AddFunction(ScalarFunction({
+                        LogicalType::LIST(LogicalType::ANY), 
+                        LogicalType::LIST(LogicalType::ANY)}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<AddOperator>,
+	                    ListArithBind));
+    set.AddFunction(ScalarFunction({
+                        LogicalType::ANY, 
+                        LogicalType::LIST(LogicalType::ANY)}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<AddOperator>,
+	                    ListArithBind));
+    set.AddFunction(ScalarFunction({
+                        LogicalType::LIST(LogicalType::ANY), 
+                        LogicalType::ANY}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<AddOperator>,
+	                    ListArithBind));
 	for (auto &func : set.functions) {
 		BaseScalarFunction::SetReturnsError(func);
 	}
 	return set;
 }
 
+/**
+ * Registers the list_sub() functions
+ */
 ScalarFunctionSet ListArithSubFun::GetFunctions() {
 	ScalarFunctionSet set("list_sub");
-	for (auto &type : LogicalType::Real()) {
-		AddListArithFunction<SubOperator>(set, type);
-	}
+	set.AddFunction(ScalarFunction({
+                        LogicalType::LIST(LogicalType::ANY), 
+                        LogicalType::LIST(LogicalType::ANY)}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<SubOperator>,
+	                    ListArithBind));
+    set.AddFunction(ScalarFunction({
+                        LogicalType::ANY, 
+                        LogicalType::LIST(LogicalType::ANY)}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<SubOperator>,
+	                    ListArithBind));
+    set.AddFunction(ScalarFunction({
+                        LogicalType::LIST(LogicalType::ANY), 
+                        LogicalType::ANY}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<SubOperator>,
+	                    ListArithBind));
 	for (auto &func : set.functions) {
 		BaseScalarFunction::SetReturnsError(func);
 	}
 	return set;
 }
 
+/**
+ * Registers the list_mul() functions
+ */
 ScalarFunctionSet ListArithMulFun::GetFunctions() {
 	ScalarFunctionSet set("list_mul");
-	for (auto &type : LogicalType::Real()) {
-		AddListArithFunction<MulOperator>(set, type);
-	}
+	set.AddFunction(ScalarFunction({
+                        LogicalType::LIST(LogicalType::ANY), 
+                        LogicalType::LIST(LogicalType::ANY)}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<MulOperator>,
+	                    ListArithBind));
+    set.AddFunction(ScalarFunction({
+                        LogicalType::ANY, 
+                        LogicalType::LIST(LogicalType::ANY)}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<MulOperator>,
+	                    ListArithBind));
+    set.AddFunction(ScalarFunction({
+                        LogicalType::LIST(LogicalType::ANY), 
+                        LogicalType::ANY}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<MulOperator>,
+	                    ListArithBind));
 	for (auto &func : set.functions) {
 		BaseScalarFunction::SetReturnsError(func);
 	}
 	return set;
 }
 
+/**
+ * Registers the list_div() functions
+ */
 ScalarFunctionSet ListArithDivFun::GetFunctions() {
 	ScalarFunctionSet set("list_div");
-	for (auto &type : LogicalType::Real()) {
-		AddListArithFunction<DivOperator>(set, type);
-	}
+	set.AddFunction(ScalarFunction({
+                        LogicalType::LIST(LogicalType::ANY), 
+                        LogicalType::LIST(LogicalType::ANY)}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<DivOperator>,
+	                    ListArithBind));
+    set.AddFunction(ScalarFunction({
+                        LogicalType::ANY, 
+                        LogicalType::LIST(LogicalType::ANY)}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<DivOperator>,
+	                    ListArithBind));
+    set.AddFunction(ScalarFunction({
+                        LogicalType::LIST(LogicalType::ANY), 
+                        LogicalType::ANY}, 
+                        LogicalType::LIST(LogicalType::ANY), 
+                        ListArithExec<DivOperator>,
+	                    ListArithBind));
 	for (auto &func : set.functions) {
 		BaseScalarFunction::SetReturnsError(func);
 	}
 	return set;
 }
 
+/**
+ * Registers the list_mmul() functions
+ */
 ScalarFunctionSet ListArithMMulFun::GetFunctions() {
 	ScalarFunctionSet set("list_mmul");
 	for (auto &type : LogicalType::Real()) {

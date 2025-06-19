@@ -6,6 +6,9 @@
 namespace duckdb
 {
 
+/**
+ * This function executes highest position on lists
+ */
 template <class TYPE>
 static void HighestPositionFun(DataChunk &args, ExpressionState &state, Vector &result) {
     // Extract function name
@@ -95,22 +98,70 @@ static void HighestPositionFun(DataChunk &args, ExpressionState &state, Vector &
     }
 }
 
+/**
+ * This struct stores important properties to select the correct function
+ */
+struct ListHPBindData : public FunctionData {
+    LogicalType element_type;
+
+    ListHPBindData(LogicalType element_type) : element_type(element_type) {}
+    unique_ptr<FunctionData> Copy() const override { 
+        return make_uniq<ListHPBindData>(element_type); 
+    }
+    bool Equals(const FunctionData &other_p) const override {
+        auto &other = other_p.Cast<ListHPBindData>();
+        return element_type == other.element_type;
+    }
+};
+
+/**
+ * This function determines if the given parameters are valid and selects the return type
+ */
+static unique_ptr<FunctionData> ListHPBind(ClientContext &, ScalarFunction &bound_function, vector<unique_ptr<Expression>> &arguments) {
+    D_ASSERT(arguments.size() == 1);
+    LogicalType element_type;
+    LogicalType arg_type = arguments[0]->return_type;
+    if (arg_type.id() != LogicalTypeId::LIST) {
+        throw BinderException("%s is not supported for this function", arg_type);
+    }
+    while(arg_type.id() == LogicalTypeId::LIST) {
+        arg_type = ListType::GetChildType(arg_type);
+    }
+    if (!arg_type.IsNumeric()) {
+        throw BinderException("%s with LIST is not supported in this function", arg_type);
+    }
+    element_type = arg_type;
+    bound_function.return_type = LogicalType::INTEGER;
+    return make_uniq<ListHPBindData>(element_type);
+}
+
+/**
+ * This function selects the correct function according to the parameter types
+ */
+static void ListHPExec(DataChunk &args, ExpressionState &state, Vector &result) {
+    auto &func_expr = state.expr.Cast<BoundFunctionExpression>();
+    auto &info = func_expr.bind_info->Cast<ListHPBindData>();
+    switch (info.element_type.id()) {
+    case LogicalTypeId::FLOAT:
+        HighestPositionFun<float>(args, state, result); 
+        break;
+    case LogicalTypeId::DOUBLE:
+        HighestPositionFun<double>(args, state, result);
+        break;
+    case LogicalTypeId::BFLOAT:
+        HighestPositionFun<std::bfloat16_t>(args, state, result);
+        break;
+    default:
+        throw NotImplementedException("Unsupported element type for highest position");
+    }
+}
+
+/**
+ * Registers highest position function
+ */
 ScalarFunctionSet HighestPosition::GetFunctions() {
 	ScalarFunctionSet set("highestposition");
-	for (auto &type : LogicalType::Real()) {
-        const auto list_single = LogicalType::LIST(type);
-        const auto list_double = LogicalType::LIST(LogicalType::LIST(type));
-        if (type.id() == LogicalTypeId::FLOAT) {
-            set.AddFunction(ScalarFunction({list_single}, LogicalType::UINTEGER, HighestPositionFun<float>));
-            set.AddFunction(ScalarFunction({list_double}, LogicalType::UINTEGER, HighestPositionFun<float>));
-        } else if (type.id() == LogicalTypeId::BFLOAT) {
-            set.AddFunction(ScalarFunction({list_single}, LogicalType::UINTEGER, HighestPositionFun<std::bfloat16_t>));
-            set.AddFunction(ScalarFunction({list_double}, LogicalType::UINTEGER, HighestPositionFun<std::bfloat16_t>));
-        } else if (type.id() == LogicalTypeId::DOUBLE) {
-            set.AddFunction(ScalarFunction({list_single}, LogicalType::UINTEGER, HighestPositionFun<double>));
-            set.AddFunction(ScalarFunction({list_double}, LogicalType::UINTEGER, HighestPositionFun<double>));
-        }
-	}
+	set.AddFunction(ScalarFunction({LogicalType::ANY}, LogicalType::ANY, ListHPExec, ListHPBind));
 	for (auto &func : set.functions) {
 		BaseScalarFunction::SetReturnsError(func);
 	}

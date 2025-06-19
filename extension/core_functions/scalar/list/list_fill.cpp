@@ -51,7 +51,6 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
     // Stores at the end the overall size of the resulting vector
     auto current_size = ListVector::GetListSize(result);
     // Start index of data (jump to values that corresponds to a specific row)
-    idx_t offset = 0;
     idx_t result_offset = 0;
     
     // Function that will be executed for each row
@@ -63,7 +62,7 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
             }
 
             // The current number of elements in a dimension
-            idx_t dim_val = *(vec_data + offset);
+            idx_t dim_val = *(vec_data + dimensions.offset);
 
             // Reserve space for the result vector
             idx_t new_size = current_size + dim_val;
@@ -81,7 +80,7 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
             for (idx_t i = 1; i < dimensions.length; i++) {
                 // Build a new child vector which contains number of elements based on the given
                 // value from the input vector
-                dim_val = *(vec_data + offset + i);
+                dim_val = *(vec_data + dimensions.offset + i);
                 type = ListType::GetChildType(type);
                 Vector child(type);
                 ListVector::Reserve(child, number_elements * dim_val);
@@ -108,7 +107,6 @@ static void ListFillFun(DataChunk &args, ExpressionState &state, Vector &result)
             // Adjust control variable
             current_size += result_metadata.length; 
             result_offset += number_elements;
-            offset += dimensions.length; 
             return result_metadata;
         });
 

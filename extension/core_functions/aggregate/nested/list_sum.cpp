@@ -4,6 +4,9 @@
 
 namespace duckdb {
 
+/**
+ * Function that will generate the resulting sum
+ */
 template<class TYPE>
 static void SumOperation(const TYPE *input, TYPE *result, idx_t input_size, idx_t result_size) {
 	for(idx_t i = 0; i < input_size; i += result_size) {
@@ -17,30 +20,37 @@ static void SumOperation(const TYPE *input, TYPE *result, idx_t input_size, idx_
 	}
 }
 
+/**
+ * This struct stores important properties for manipulating the sum state
+ */
 struct ListBindSumData : public FunctionData {
-	explicit ListBindSumData(const LogicalType &stype_p);
+	explicit ListBindSumData(const LogicalType &return_type, const LogicalType &element_type);
 	~ListBindSumData() override;
 
-	LogicalType stype;
+	LogicalType return_type;
+	LogicalType element_type;
 	ListSegmentFunctions functions;
 
 	unique_ptr<FunctionData> Copy() const override {
-		return make_uniq<ListBindSumData>(stype);
+		return make_uniq<ListBindSumData>(return_type, element_type);
 	}
 
 	bool Equals(const FunctionData &other_p) const override {
 		auto &other = other_p.Cast<ListBindSumData>();
-		return stype == other.stype;
+		return return_type == other.return_type && element_type == other.element_type;
 	}
 };
 
-ListBindSumData::ListBindSumData(const LogicalType &stype_p) : stype(stype_p) {
-	GetSegmentDataFunctions(functions, stype_p);
+ListBindSumData::ListBindSumData(const LogicalType &return_type, const LogicalType &element_type) : return_type(return_type), element_type(element_type) {
+	GetSegmentDataFunctions(functions, return_type);
 }
 
 ListBindSumData::~ListBindSumData() {
 }
 
+/**
+ * This struct stores the sum state
+ */
 struct ListSumState {
 	LinkedList linked_list;
 	idx_t result_length;
@@ -59,6 +69,10 @@ struct ListSumFunction {
 	}
 };
 
+/**
+ * This function will be executed on each row
+ * (Each row will get a sum state)
+ */
 static void ListSumUpdate(Vector inputs[], AggregateInputData &aggr_input_data, idx_t input_count,
                                Vector &state_vector, idx_t count) {
 
@@ -81,7 +95,9 @@ static void ListSumUpdate(Vector inputs[], AggregateInputData &aggr_input_data, 
 
 }
 
-template<class TYPE>
+/**
+ * This function merges each row state into a single result state
+ */
 static void ListSumCombine(Vector &states_vector, Vector &combined, AggregateInputData &aggr_input_data,
                                 idx_t count) {
 
@@ -91,7 +107,7 @@ static void ListSumCombine(Vector &states_vector, Vector &combined, AggregateInp
 	auto combined_ptr = FlatVector::GetData<ListSumState *>(combined);
 
 	auto &list_bind_data = aggr_input_data.bind_data->Cast<ListBindSumData>();
-	auto result_type = list_bind_data.stype;
+	auto result_type = list_bind_data.return_type;
 
 	auto &source = *states_ptr[states_data.sel->get_index(0)];
 	auto &target = *combined_ptr[0];
@@ -111,7 +127,6 @@ static void ListSumCombine(Vector &states_vector, Vector &combined, AggregateInp
 	auto length = capacity;
 	// Number of elements (include single row)
 	idx_t size = 1;
-	auto type = ListType::GetChildType(result_type);
 	// Pointer to the last created vector
 	auto *state_vec = &final_state;
 	// Pointer to the input vector and children to get access of individual sizes
@@ -139,19 +154,7 @@ static void ListSumCombine(Vector &states_vector, Vector &combined, AggregateInp
 			metadata->offset = 0;
 			metadata->length = dimension_val;
 			target.result_length = dimension_val;
-		// Add a child vector to the last created vector
 		} else {
-			Vector final_child(type);
-			ListVector::Reserve(final_child, size * dimension_val);
-			ListVector::SetListSize(final_child, size * dimension_val);
-			auto* metadata = ListVector::GetData(final_child);
-			for(idx_t i = 0; i < size; i++) {
-				metadata[i].offset = i * dimension_val;
-				metadata[i].length = dimension_val;
-			}
-			// Idea: final_state.append(child_1) -> child_1.append(child_2) -> ...
-			// Depending on the overall dimensions of the LIST
-			ListVector::Append(*state_vec, final_child, size);
 			state_vec = &ListVector::GetEntry(*state_vec);
 		}
 		size = size * dimension_val;
@@ -160,13 +163,28 @@ static void ListSumCombine(Vector &states_vector, Vector &combined, AggregateInp
 		data_uniform_vec = &data_uniform_vec->children.back();
 	}
 
+	// Copy the first element of the input to the final_state
+	VectorOperations::Copy(input, final_state, 1, 0, 0);
+
 	// Get the actual data of input and result
 	auto data_vec = ListVector::GetEntry(*state_vec);
-	auto *result_data = FlatVector::GetData<TYPE>(data_vec);
-	auto *incoming_data = UnifiedVectorFormat::GetData<TYPE>(data_uniform_vec->unified);
-	
-	// Execute sum operation
-	SumOperation<TYPE>(incoming_data, result_data, size * capacity, size);
+
+	// Execute sum operation based on the element type
+	if (list_bind_data.element_type.id() == LogicalTypeId::FLOAT) {
+		auto *result_data = FlatVector::GetData<float>(data_vec);
+		auto *incoming_data = UnifiedVectorFormat::GetData<float>(data_uniform_vec->unified);
+		SumOperation<float>(incoming_data, result_data, size * capacity, size);		
+	} else if (list_bind_data.element_type.id() == LogicalTypeId::DOUBLE) {
+		auto *result_data = FlatVector::GetData<double>(data_vec);
+		auto *incoming_data = UnifiedVectorFormat::GetData<double>(data_uniform_vec->unified);
+		SumOperation<double>(incoming_data, result_data, size * capacity, size);
+	} else if (list_bind_data.element_type.id() == LogicalTypeId::BFLOAT) {
+		auto *result_data = FlatVector::GetData<std::bfloat16_t>(data_vec);
+		auto *incoming_data = UnifiedVectorFormat::GetData<std::bfloat16_t>(data_uniform_vec->unified);
+		SumOperation<std::bfloat16_t>(incoming_data, result_data, size * capacity, size);
+	} else {
+		throw InvalidInputException("Type %s is not supported", list_bind_data.element_type);
+	}
 
 	// Transform final vector into unified-vector-format
 	RecursiveUnifiedVectorFormat final_data;
@@ -178,6 +196,9 @@ static void ListSumCombine(Vector &states_vector, Vector &combined, AggregateInp
 	list_bind_data.functions.AppendRow(aggr_input_data.allocator, target.linked_list, final_data, entry_idx);
 }
 
+/*
+ * This function will generate the result vector
+ */
 static void ListSumFinalize(Vector &states_vector, AggregateInputData &aggr_input_data, Vector &result, idx_t count,
                          idx_t offset) {
 
@@ -213,6 +234,9 @@ static void ListSumFinalize(Vector &states_vector, AggregateInputData &aggr_inpu
 	ListVector::SetListSize(result, total_len);
 }
 
+/**
+ * This function will determine the return type and checks if the input type is valid
+ */
 unique_ptr<FunctionData> ListSumBindFunction(ClientContext &context, AggregateFunction &function,
                                           vector<unique_ptr<Expression>> &arguments) {
 	D_ASSERT(arguments.size() == 1);
@@ -224,52 +248,26 @@ unique_ptr<FunctionData> ListSumBindFunction(ClientContext &context, AggregateFu
 		return nullptr;
 	}
 
+	if (arguments[0]->return_type.id() != LogicalTypeId::LIST) {
+		throw BinderException("Parameter must be of type LIST");
+	}
+	
+	LogicalType element_type = arguments[0]->return_type;
+	while(element_type.id() == LogicalTypeId::LIST){
+		element_type = ListType::GetChildType(element_type);
+	}
+
 	function.return_type = arguments[0]->return_type;
-	return make_uniq<ListBindSumData>(function.return_type);
+	return make_uniq<ListBindSumData>(function.return_type, element_type);
 }
 
 AggregateFunctionSet ListSum::GetFunctions() {
     AggregateFunctionSet result("list_sum");
-    
-    for (auto &type : LogicalType::Real()) {
-		auto single_list = LogicalType::LIST(type);
-        auto double_list = LogicalType::LIST(LogicalType::LIST(type));
 
-		if (type.id() == LogicalTypeId::FLOAT) {
-			result.AddFunction(
-        	    AggregateFunction({single_list}, single_list, AggregateFunction::StateSize<ListSumState>,
-        	                  AggregateFunction::StateInitialize<ListSumState, ListSumFunction>, ListSumUpdate,
-        	                  ListSumCombine<float>, ListSumFinalize, nullptr, ListSumBindFunction, nullptr, nullptr, nullptr)
-        	);
-        	result.AddFunction(
-        	    AggregateFunction({double_list}, double_list, AggregateFunction::StateSize<ListSumState>,
-        	                  AggregateFunction::StateInitialize<ListSumState, ListSumFunction>, ListSumUpdate,
-        	                  ListSumCombine<float>, ListSumFinalize, nullptr, ListSumBindFunction, nullptr, nullptr, nullptr)
-        	);
-		} else if (type.id() == LogicalTypeId::BFLOAT) {
-			result.AddFunction(
-        	    AggregateFunction({single_list}, single_list, AggregateFunction::StateSize<ListSumState>,
-        	                  AggregateFunction::StateInitialize<ListSumState, ListSumFunction>, ListSumUpdate,
-        	                  ListSumCombine<std::bfloat16_t>, ListSumFinalize, nullptr, ListSumBindFunction, nullptr, nullptr, nullptr)
-        	);
-        	result.AddFunction(
-        	    AggregateFunction({double_list}, double_list, AggregateFunction::StateSize<ListSumState>,
-        	                  AggregateFunction::StateInitialize<ListSumState, ListSumFunction>, ListSumUpdate,
-        	                  ListSumCombine<std::bfloat16_t>, ListSumFinalize, nullptr, ListSumBindFunction, nullptr, nullptr, nullptr)
-        	);
-		} else if (type.id() == LogicalTypeId::DOUBLE) {
-			result.AddFunction(
-        	    AggregateFunction({single_list}, single_list, AggregateFunction::StateSize<ListSumState>,
-        	                  AggregateFunction::StateInitialize<ListSumState, ListSumFunction>, ListSumUpdate,
-        	                  ListSumCombine<double>, ListSumFinalize, nullptr, ListSumBindFunction, nullptr, nullptr, nullptr)
-        	);
-        	result.AddFunction(
-        	    AggregateFunction({double_list}, double_list, AggregateFunction::StateSize<ListSumState>,
-        	                  AggregateFunction::StateInitialize<ListSumState, ListSumFunction>, ListSumUpdate,
-        	                  ListSumCombine<double>, ListSumFinalize, nullptr, ListSumBindFunction, nullptr, nullptr, nullptr)
-        	);
-		}
-	}
+	AggregateFunction fun({LogicalType::ANY}, LogicalType::ANY, AggregateFunction::StateSize<ListSumState>,
+        	                AggregateFunction::StateInitialize<ListSumState, ListSumFunction>, ListSumUpdate,
+        	                ListSumCombine, ListSumFinalize, nullptr, ListSumBindFunction, nullptr, nullptr, nullptr);
+    result.AddFunction(fun);
     return result;
 }
 
