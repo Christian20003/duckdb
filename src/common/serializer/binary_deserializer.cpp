@@ -98,7 +98,7 @@ uint64_t BinaryDeserializer::ReadUnsignedInt64() {
 	return VarIntDecode<uint64_t>();
 }
 
-std::bfloat16_t BinaryDeserializer::ReadHalfFloat() {
+std::bfloat16_t BinaryDeserializer::ReadBFloat() {
 	auto value = ReadPrimitive<std::bfloat16_t>();
 	return value;
 }

@@ -519,7 +519,7 @@ Value Value::UBIGINT(uint64_t value) {
 	return result;
 }
 
-bool Value::HalfFloatIsFinite(std::bfloat16_t value) {
+bool Value::BFloatIsFinite(std::bfloat16_t value) {
 	return !(std::isnan(value) || std::isinf(value));
 }
 
@@ -548,7 +548,7 @@ bool Value::IsNan(double input) {
 
 template <>
 bool Value::IsFinite(std::bfloat16_t input) {
-	return Value::HalfFloatIsFinite(input);
+	return Value::BFloatIsFinite(input);
 }
 
 template <>
@@ -1751,7 +1751,7 @@ uhugeint_t UhugeIntValue::Get(const Value &value) {
 	return value.GetValueUnsafe<uhugeint_t>();
 }
 
-std::bfloat16_t HalfFloatValue::Get(const Value &value) {
+std::bfloat16_t BFloatValue::Get(const Value &value) {
 	return value.GetValueUnsafe<std::bfloat16_t>();
 }
 

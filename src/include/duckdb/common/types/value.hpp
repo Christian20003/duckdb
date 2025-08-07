@@ -272,7 +272,7 @@ public:
 	DUCKDB_API bool operator<=(const int64_t &rhs) const;
 	DUCKDB_API bool operator>=(const int64_t &rhs) const;
 
-	DUCKDB_API static bool HalfFloatIsFinite(std::bfloat16_t value);
+	DUCKDB_API static bool BFloatIsFinite(std::bfloat16_t value);
 	DUCKDB_API static bool FloatIsFinite(float value);
 	DUCKDB_API static bool DoubleIsFinite(double value);
 	template <class T>
@@ -400,7 +400,7 @@ struct UhugeIntValue {
 	DUCKDB_API static uhugeint_t Get(const Value &value);
 };
 
-struct HalfFloatValue {
+struct BFloatValue {
 	DUCKDB_API static std::bfloat16_t Get(const Value &value);
 };
 

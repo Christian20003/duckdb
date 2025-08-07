@@ -29,7 +29,7 @@ struct NumericValueUnion {
 		uint64_t ubigint;
 		hugeint_t hugeint;
 		uhugeint_t uhugeint;
-		std::bfloat16_t halffloat;
+		std::bfloat16_t bfloat;
 		float float_;   // NOLINT
 		double double_; // NOLINT
 	} value_;           // NOLINT
@@ -95,7 +95,7 @@ DUCKDB_API inline uint64_t &NumericValueUnion::GetReferenceUnsafe() {
 
 template <>
 DUCKDB_API inline std::bfloat16_t &NumericValueUnion::GetReferenceUnsafe() {
-	return value_.halffloat;
+	return value_.bfloat;
 }
 
 template <>
