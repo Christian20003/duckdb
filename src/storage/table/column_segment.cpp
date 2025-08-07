@@ -512,7 +512,7 @@ idx_t ColumnSegment::FilterSelection(SelectionVector &sel, Vector &vector, Unifi
 			break;
 		}
 		case PhysicalType::BFLOAT: {
-			auto predicate = HalfFloatValue::Get(constant_filter.constant);
+			auto predicate = BFloatValue::Get(constant_filter.constant);
 			FilterSelectionSwitch<std::bfloat16_t>(vdata, predicate, sel, approved_tuple_count, constant_filter.comparison_type);
 			break;
 		}

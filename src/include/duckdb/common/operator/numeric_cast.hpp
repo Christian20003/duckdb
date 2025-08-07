@@ -233,7 +233,7 @@ bool TryCastWithOverflowCheck(float input, double &result) {
 template <>
 bool TryCastWithOverflowCheck(float input, std::bfloat16_t &result) {
 	auto res = static_cast<std::bfloat16_t>(input);
-	if (!Value::HalfFloatIsFinite(res)) {
+	if (!Value::BFloatIsFinite(res)) {
 		return false;
 	}
 	result = res;
@@ -266,7 +266,7 @@ bool TryCastWithOverflowCheck(double input, std::bfloat16_t &result) {
 		return true;
 	}
 	auto res = static_cast<std::bfloat16_t>(input);
-	if (!Value::HalfFloatIsFinite(res)) {
+	if (!Value::BFloatIsFinite(res)) {
 		return false;
 	}
 	result = res;

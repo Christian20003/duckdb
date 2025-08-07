@@ -168,7 +168,7 @@ static int64_t ImplicitCastUBigint(const LogicalType &to) {
 	}
 }
 
-static int64_t ImplicitCastHalfFloat(const LogicalType &to) {
+static int64_t ImplicitCastBFloat(const LogicalType &to) {
 	switch (to.id()) {
 	case LogicalTypeId::FLOAT:
 	case LogicalTypeId::DOUBLE:
@@ -575,7 +575,7 @@ int64_t CastRules::ImplicitCast(const LogicalType &from, const LogicalType &to) 
 	case LogicalTypeId::UHUGEINT:
 		return ImplicitCastUhugeint(to);
 	case LogicalTypeId::BFLOAT:
-		return ImplicitCastHalfFloat(to);
+		return ImplicitCastBFloat(to);
 	case LogicalTypeId::FLOAT:
 		return ImplicitCastFloat(to);
 	case LogicalTypeId::DOUBLE:

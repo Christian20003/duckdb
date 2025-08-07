@@ -116,7 +116,7 @@ uint64_t GetNumericValueUnion::Operation(const NumericValueUnion &v) {
 
 template <>
 std::bfloat16_t GetNumericValueUnion::Operation(const NumericValueUnion &v) {
-	return v.value_.halffloat;
+	return v.value_.bfloat;
 }
 
 template <>
@@ -324,7 +324,7 @@ void SetNumericValueInternal(const Value &input, const LogicalType &type, Numeri
 		val.value_.uhugeint = UhugeIntValue::Get(input);
 		break;
 	case PhysicalType::BFLOAT:
-		val.value_.halffloat = HalfFloatValue::Get(input);
+		val.value_.bfloat = BFloatValue::Get(input);
 		break;
 	case PhysicalType::FLOAT:
 		val.value_.float_ = FloatValue::Get(input);
@@ -372,7 +372,7 @@ Value NumericValueUnionToValueInternal(const LogicalType &type, const NumericVal
 	case PhysicalType::UINT128:
 		return Value::UHUGEINT(val.value_.uhugeint);
 	case PhysicalType::BFLOAT:
-		return Value::BFLOAT(val.value_.halffloat);
+		return Value::BFLOAT(val.value_.bfloat);
 	case PhysicalType::FLOAT:
 		return Value::FLOAT(val.value_.float_);
 	case PhysicalType::DOUBLE:
@@ -475,7 +475,7 @@ static void SerializeNumericStatsValue(const LogicalType &type, NumericValueUnio
 		serializer.WriteProperty(101, "value", val.value_.uhugeint);
 		break;
 	case PhysicalType::BFLOAT:
-		serializer.WriteProperty(101, "value", val.value_.halffloat);
+		serializer.WriteProperty(101, "value", val.value_.bfloat);
 		break;
 	case PhysicalType::FLOAT:
 		serializer.WriteProperty(101, "value", val.value_.float_);
@@ -531,7 +531,7 @@ static void DeserializeNumericStatsValue(const LogicalType &type, NumericValueUn
 		result.value_.uhugeint = deserializer.ReadProperty<uhugeint_t>(101, "value");
 		break;
 	case PhysicalType::BFLOAT:
-		result.value_.halffloat = deserializer.ReadProperty<std::bfloat16_t>(101, "value");
+		result.value_.bfloat = deserializer.ReadProperty<std::bfloat16_t>(101, "value");
 		break;
 	case PhysicalType::FLOAT:
 		result.value_.float_ = deserializer.ReadProperty<float>(101, "value");
